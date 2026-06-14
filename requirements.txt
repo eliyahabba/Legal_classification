@@ -1,4 +1,3 @@
 streamlit>=1.46
 pandas
 plotly
-langchain-core

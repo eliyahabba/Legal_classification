@@ -2,6 +2,7 @@
 
 import html as html_lib
 import json
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -9,12 +10,11 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from src.new_classifier.experiment_manager import (
-    EXPERIMENT_RESULTS_NAME,
-    list_experiment_dirs,
-    load_experiment_metadata,
-)
-from src.utils.constants import DATA_DIR, EXPERIMENTS_DIR, PROJECT_ROOT
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+DATA_DIR = PROJECT_ROOT / "data"
+EXPERIMENTS_DIR = DATA_DIR / "experiments"
+EXPERIMENT_RESULTS_NAME = "classification_results.csv"
+EXPERIMENT_METADATA_NAME = "metadata.json"
 
 LEGACY_RESULTS_FILE = DATA_DIR / "categories_agglomerative_k8_classification_results.csv"
 ORIGIN_LABELS_FILE = DATA_DIR / "results.csv"
@@ -201,6 +201,27 @@ html, body, [class*="css"] {
 
 def _normalize_sentence(text: str) -> str:
     return str(text).strip().replace("  ", " ")
+
+
+def list_experiment_dirs() -> List[Path]:
+    if not EXPERIMENTS_DIR.exists():
+        return []
+
+    exp_dirs = [
+        path
+        for path in EXPERIMENTS_DIR.iterdir()
+        if path.is_dir() and re.fullmatch(r"exp\d+", path.name)
+    ]
+    return sorted(exp_dirs, key=lambda p: int(p.name.replace("exp", "")))
+
+
+def load_experiment_metadata(exp_dir: Path) -> Optional[Dict[str, Any]]:
+    metadata_path = exp_dir / EXPERIMENT_METADATA_NAME
+    if not metadata_path.exists():
+        return None
+
+    with open(metadata_path, "r", encoding="utf-8") as f:
+        return json.load(f)
 
 
 def _resolve_categories_file(metadata: Optional[Dict[str, Any]]) -> Path:
