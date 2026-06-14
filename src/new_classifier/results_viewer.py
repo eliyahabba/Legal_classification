@@ -3,6 +3,7 @@
 import html as html_lib
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -11,15 +12,25 @@ import plotly.express as px
 import streamlit as st
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.utils.category_parser import (
+    NOT_RELEVANT,
+    build_category_lookup,
+    parse_category_response,
+    parse_classification_response,
+)
 DATA_DIR = PROJECT_ROOT / "data"
 EXPERIMENTS_DIR = DATA_DIR / "experiments"
 EXPERIMENT_RESULTS_NAME = "classification_results.csv"
+EXPERIMENT_MYTH_RESULTS_NAME = "classification_results_with_myth.csv"
 EXPERIMENT_METADATA_NAME = "metadata.json"
+MYTH_PROMPT_FILE = PROJECT_ROOT / "src" / "utils" / "lying_woman_myth_prompt.txt"
 
 LEGACY_RESULTS_FILE = DATA_DIR / "categories_agglomerative_k8_classification_results.csv"
 ORIGIN_LABELS_FILE = DATA_DIR / "results.csv"
 DEFAULT_CATEGORIES_FILE = PROJECT_ROOT / "src" / "new_classifier" / "categories_agglomerative_k8.csv"
-NOT_RELEVANT = "לא רלוונטי"
 ACCENT = "#2563eb"
 
 CHART_COLORS = [
@@ -219,67 +230,102 @@ html, body, [class*="css"] {
     color: #64748b;
     margin-bottom: 1rem;
 }
+
+.myth-polarity-tag {
+    font-size: 0.92rem;
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 0.5rem 0.65rem;
+    line-height: 1.5;
+    margin-bottom: 0.75rem;
+}
+
+.myth-polarity-נדחה {
+    color: #166534;
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+}
+
+.myth-polarity-אומץ {
+    color: #991b1b;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+}
+
+.myth-polarity-צד_מתדיין {
+    color: #1e40af;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+}
+
+.myth-polarity-לא_רלוונטי {
+    color: #475569;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+.myth-trigger-tag {
+    font-size: 0.9rem;
+    font-weight: 400;
+    color: #5b21b6;
+    background: #f5f3ff;
+    border-radius: 6px;
+    padding: 0.5rem 0.65rem;
+    line-height: 1.55;
+    border: 1px solid #ddd6fe;
+    margin-bottom: 0.75rem;
+}
+
+.myth-invokes-tag {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 0.75rem;
+}
 </style>
 """
+
+MYTH_POLARITY_ORDER = ["נדחה", "אומץ", "צד_מתדיין", "לא_רלוונטי"]
+MYTH_POLARITY_DISPLAY = {
+    "נדחה": "נדחה",
+    "אומץ": "אומץ",
+    "צד_מתדיין": "צד מתדיין",
+    "לא_רלוונטי": "לא רלוונטי",
+}
+MYTH_POLARITY_COLORS = {
+    "נדחה": "#059669",
+    "אומץ": "#dc2626",
+    "צד_מתדיין": "#2563eb",
+    "לא_רלוונטי": "#64748b",
+}
 
 
 def _normalize_sentence(text: str) -> str:
     return str(text).strip().replace("  ", " ")
 
 
-REASONING_PREFIX = "נימוק:"
-CATEGORY_PREFIX = "קטגוריה:"
+def _categories_lookup(categories: pd.DataFrame) -> tuple[dict, set]:
+    category_rows = [
+        {"id": int(row["cluster"]) + 1, "name": str(row["label"]).strip()}
+        for _, row in categories.iterrows()
+    ]
+    return build_category_lookup(category_rows)
 
 
-def _strip_category_number(text: str) -> str:
-    return re.sub(r"^\d+\s*:\s*", "", text.strip()).strip()
+def _normalize_result_row(
+    row: pd.Series,
+    id_to_name: dict,
+    valid_names: set,
+    has_reasoning_col: bool,
+) -> Tuple[str, Optional[str]]:
+    raw_category = str(row["new_category"]) if pd.notna(row["new_category"]) else ""
+    stored_reasoning = row.get("model_reasoning") if has_reasoning_col else None
 
+    if has_reasoning_col and pd.notna(stored_reasoning) and str(stored_reasoning).strip():
+        category = parse_category_response(raw_category, id_to_name, valid_names)
+        return category, str(stored_reasoning).strip()
 
-def _match_known_category(text: str, known_labels: set) -> str:
-    text = _strip_category_number(text.splitlines()[0].strip())
-    if not text:
-        return NOT_RELEVANT
-    if text in known_labels:
-        return text
-    if text == NOT_RELEVANT or "לא רלוונטי" in text:
-        return NOT_RELEVANT
-    for label in known_labels:
-        if label in text or text in label:
-            return label
-    return NOT_RELEVANT
-
-
-def parse_classification_output(raw: str, known_labels: set) -> Tuple[str, Optional[str]]:
-    text = str(raw).strip()
-    if not text:
-        return NOT_RELEVANT, None
-
-    if CATEGORY_PREFIX not in text and REASONING_PREFIX not in text:
-        return _match_known_category(text, known_labels), None
-
-    reasoning = None
-    category_text = text
-
-    if CATEGORY_PREFIX in text:
-        reasoning_block, category_text = text.split(CATEGORY_PREFIX, 1)
-        category_text = category_text.strip()
-        reasoning_block = reasoning_block.strip()
-        if REASONING_PREFIX in reasoning_block:
-            reasoning = reasoning_block.split(REASONING_PREFIX, 1)[1].strip()
-        elif reasoning_block:
-            reasoning = reasoning_block
-    elif REASONING_PREFIX in text:
-        reasoning = text.split(REASONING_PREFIX, 1)[1].strip()
-        if CATEGORY_PREFIX in reasoning:
-            reasoning, category_text = reasoning.split(CATEGORY_PREFIX, 1)
-            reasoning = reasoning.strip()
-            category_text = category_text.strip()
-        else:
-            category_text = NOT_RELEVANT
-
-    reasoning = reasoning.splitlines()[0].strip() if reasoning else None
-    category = _match_known_category(category_text, known_labels)
-    return category, reasoning or None
+    return parse_classification_response(raw_category, id_to_name, valid_names)
 
 
 def list_experiment_dirs() -> List[Path]:
@@ -317,6 +363,49 @@ def _available_experiments() -> List[str]:
     return [d.name for d in list_experiment_dirs() if (d / EXPERIMENT_RESULTS_NAME).exists()]
 
 
+def _myth_results_path(experiment_id: str) -> Path:
+    return EXPERIMENTS_DIR / experiment_id / EXPERIMENT_MYTH_RESULTS_NAME
+
+
+def _has_myth_results(experiment_id: str) -> bool:
+    return _myth_results_path(experiment_id).exists()
+
+
+def _format_invokes_myth(value: object) -> str:
+    if pd.isna(value):
+        return "—"
+    if value is True or str(value).strip().lower() in ("true", "1", "yes"):
+        return "כן"
+    return "לא"
+
+
+def _format_myth_polarity(value: object) -> str:
+    if pd.isna(value) or not str(value).strip():
+        return "—"
+    key = str(value).strip()
+    return MYTH_POLARITY_DISPLAY.get(key, key.replace("_", " "))
+
+
+def _myth_polarity_css_key(value: object) -> str:
+    if pd.isna(value):
+        return "לא_רלוונטי"
+    key = str(value).strip()
+    return key if key in MYTH_POLARITY_DISPLAY else "לא_רלוונטי"
+
+
+@st.cache_data
+def load_myth_data(experiment_id: str) -> pd.DataFrame:
+    myth_path = _myth_results_path(experiment_id)
+    if not myth_path.exists():
+        return pd.DataFrame()
+
+    myth_df = pd.read_csv(myth_path)
+    labeled = myth_df["myth_raw"].notna() & (myth_df["myth_raw"].astype(str).str.strip() != "")
+    myth_df = myth_df[labeled].copy()
+    myth_df["myth_polarity"] = myth_df["myth_polarity"].fillna("לא_רלוונטי")
+    return myth_df
+
+
 @st.cache_data
 def load_data(experiment_id: str) -> Tuple[pd.DataFrame, List[str], Dict[str, Any]]:
     exp_dir = EXPERIMENTS_DIR / experiment_id
@@ -342,8 +431,13 @@ def load_data(experiment_id: str) -> Tuple[pd.DataFrame, List[str], Dict[str, An
     results["original_category"] = results["original_category"].fillna(results["category"])
 
     known_labels = set(categories["label"])
-    parsed = results["new_category"].apply(
-        lambda x: parse_classification_output(x, known_labels)
+    id_to_name, valid_names = _categories_lookup(categories)
+    has_reasoning_col = "model_reasoning" in results.columns
+    parsed = results.apply(
+        lambda row: _normalize_result_row(
+            row, id_to_name, valid_names, has_reasoning_col
+        ),
+        axis=1,
     )
     results["model_reasoning"] = parsed.apply(lambda x: x[1])
     results["new_category"] = parsed.apply(lambda x: x[0])
@@ -419,6 +513,229 @@ def render_prompt_panel(metadata: Dict[str, Any]) -> None:
         st.code(json.dumps(metadata, ensure_ascii=False, indent=2), language="json")
 
 
+def render_myth_card(row: pd.Series) -> None:
+    sentence = str(row["origin_sentence"]).strip()
+    polarity = row.get("myth_polarity")
+    polarity_key = _myth_polarity_css_key(polarity)
+    polarity_text = _format_myth_polarity(polarity)
+    invokes_text = _format_invokes_myth(row.get("invokes_myth"))
+    trigger = row.get("myth_trigger")
+    trigger_text = str(trigger).strip() if pd.notna(trigger) and str(trigger).strip() else ""
+    reason = row.get("myth_reason")
+    reason_text = str(reason).strip() if pd.notna(reason) and str(reason).strip() else ""
+
+    parts = [
+        '<div class="sentence-card">',
+        f'<div class="sentence-body hebrew">{html_lib.escape(sentence)}</div>',
+        '<div class="card-divider"></div>',
+        '<div class="origin-label">מפעיל מיתוס</div>',
+        f'<div class="myth-invokes-tag hebrew">{html_lib.escape(invokes_text)}</div>',
+        '<div class="origin-label">קוטביות</div>',
+        f'<div class="myth-polarity-tag myth-polarity-{polarity_key} hebrew">'
+        f"{html_lib.escape(polarity_text)}</div>",
+    ]
+    if trigger_text:
+        parts.extend(
+            [
+                '<div class="origin-label">טריגר</div>',
+                f'<div class="myth-trigger-tag hebrew">{html_lib.escape(trigger_text)}</div>',
+            ]
+        )
+    if reason_text:
+        parts.extend(
+            [
+                '<div class="origin-label">נימוק</div>',
+                f'<div class="reasoning-tag hebrew">{html_lib.escape(reason_text)}</div>',
+            ]
+        )
+    parts.append("</div>")
+    st.html("".join(parts))
+
+
+def myth_polarity_label(polarity: str, counts: pd.Series, total: int) -> str:
+    display = _format_myth_polarity(polarity)
+    count = int(counts.get(polarity, 0))
+    pct = 100 * count / total if total else 0
+    return f"{display}  ·  {count} ({pct:.0f}%)"
+
+
+def render_myth_panel(experiment_id: str) -> None:
+    myth_df = load_myth_data(experiment_id)
+    if myth_df.empty:
+        st.info("No myth annotations found for this experiment.")
+        return
+
+    counts = myth_df["myth_polarity"].value_counts()
+    invokes_true = myth_df["invokes_myth"].apply(
+        lambda v: v is True or str(v).strip().lower() in ("true", "1", "yes")
+    ).sum()
+    total = len(myth_df)
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Annotated sentences", f"{total:,}")
+    c2.metric("Invokes myth", f"{int(invokes_true):,}")
+    c3.metric("Rejected (נדחה)", f"{int(counts.get('נדחה', 0)):,}")
+    c4.metric("Adopted (אומץ)", f"{int(counts.get('אומץ', 0)):,}")
+
+    polarity_labels = [p for p in MYTH_POLARITY_ORDER if counts.get(p, 0) > 0 or p == "לא_רלוונטי"]
+    for p in MYTH_POLARITY_ORDER:
+        if p not in polarity_labels and counts.get(p, 0) > 0:
+            polarity_labels.append(p)
+
+    dist = (
+        myth_df["myth_polarity"]
+        .value_counts()
+        .reindex(polarity_labels, fill_value=0)
+        .reset_index()
+    )
+    dist.columns = ["polarity", "count"]
+    dist["display"] = dist["polarity"].map(_format_myth_polarity)
+    dist_total = int(dist["count"].sum())
+    dist["pct"] = (100 * dist["count"] / dist_total).round(1) if dist_total else 0
+
+    color_map = {row["display"]: MYTH_POLARITY_COLORS.get(row["polarity"], "#64748b") for _, row in dist.iterrows()}
+    fig = px.bar(
+        dist,
+        x="count",
+        y="display",
+        orientation="h",
+        color="display",
+        color_discrete_map=color_map,
+        text=dist.apply(lambda r: f"{int(r['count'])} ({r['pct']}%)", axis=1),
+        category_orders={"display": list(reversed(dist["display"].tolist()))},
+    )
+    fig.update_layout(
+        height=320,
+        margin=dict(l=20, r=20, t=30, b=20),
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        showlegend=False,
+        font=dict(size=13),
+        yaxis=dict(tickfont=dict(family="Heebo, Arial Hebrew, sans-serif", size=12)),
+        xaxis_title="Number of sentences",
+        yaxis_title="",
+    )
+    fig.update_traces(textposition="outside", cliponaxis=False)
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown('<p class="panel-title">Sentences by myth polarity</p>', unsafe_allow_html=True)
+
+    if "selected_myth_polarity" not in st.session_state:
+        st.session_state.selected_myth_polarity = polarity_labels[0]
+    if st.session_state.selected_myth_polarity not in polarity_labels:
+        st.session_state.selected_myth_polarity = polarity_labels[0]
+
+    only_invokes = st.checkbox("Show only sentences that invoke the myth", value=False, key="myth_only_invokes")
+
+    col_polarities, col_sentences = st.columns([2, 3], gap="large")
+
+    with col_polarities:
+        pol_idx = polarity_labels.index(st.session_state.selected_myth_polarity)
+        render_category_nav(
+            polarity_labels,
+            pol_idx,
+            "myth_top",
+            state_key="selected_myth_polarity",
+            page_key="myth_page",
+        )
+
+        for i, polarity in enumerate(polarity_labels):
+            is_selected = polarity == st.session_state.selected_myth_polarity
+            css = "cat-row-label active" if is_selected else "cat-row-label"
+            col_text, col_btn = st.columns([7, 1], gap="small", vertical_alignment="center")
+            with col_text:
+                st.html(
+                    f'<div class="{css}">{html_lib.escape(myth_polarity_label(polarity, counts, total))}</div>'
+                )
+            with col_btn:
+                if st.button(
+                    "●" if is_selected else "○",
+                    key=f"mythpick_{i}",
+                    use_container_width=True,
+                    type="primary" if is_selected else "secondary",
+                ):
+                    st.session_state.selected_myth_polarity = polarity
+                    st.session_state.myth_page = 0
+                    st.rerun()
+
+        render_category_nav(
+            polarity_labels,
+            polarity_labels.index(st.session_state.selected_myth_polarity),
+            "myth_bottom",
+            state_key="selected_myth_polarity",
+            page_key="myth_page",
+        )
+
+    with col_sentences:
+        polarity = st.session_state.selected_myth_polarity
+        subset = myth_df[myth_df["myth_polarity"] == polarity].copy()
+        if only_invokes:
+            subset = subset[
+                subset["invokes_myth"].apply(
+                    lambda v: v is True or str(v).strip().lower() in ("true", "1", "yes")
+                )
+            ]
+
+        filt1, filt2 = st.columns([3, 1])
+        with filt1:
+            search = st.text_input(
+                "Search sentences",
+                placeholder="Type a word...",
+                key="myth_sentence_search",
+            )
+        with filt2:
+            page_size = st.selectbox("Per page", [5, 10, 20, 50], index=1, key="myth_page_size")
+
+        if search.strip():
+            mask = subset["origin_sentence"].str.contains(search.strip(), case=False, na=False)
+            subset = subset[mask]
+
+        st.html(
+            f'<div class="category-header">'
+            f'<span class="cat-name hebrew">{html_lib.escape(_format_myth_polarity(polarity))}</span>'
+            f'<span class="count-he hebrew"> — {len(subset)} משפטים</span>'
+            f"</div>"
+        )
+
+        if subset.empty:
+            st.info("No sentences found for this filter.")
+        else:
+            total_pages = max(1, (len(subset) - 1) // page_size + 1)
+            if "myth_page" not in st.session_state:
+                st.session_state.myth_page = 0
+            if st.session_state.myth_page >= total_pages:
+                st.session_state.myth_page = 0
+
+            pg_prev, pg_num, pg_next = st.columns([1, 2, 1])
+            with pg_prev:
+                if st.button("Previous page", disabled=st.session_state.myth_page == 0, key="myth_pg_prev"):
+                    st.session_state.myth_page -= 1
+                    st.rerun()
+            with pg_num:
+                st.markdown(
+                    f'<p class="nav-hint">Page {st.session_state.myth_page + 1} of {total_pages}</p>',
+                    unsafe_allow_html=True,
+                )
+            with pg_next:
+                if st.button(
+                    "Next page",
+                    disabled=st.session_state.myth_page >= total_pages - 1,
+                    key="myth_pg_next",
+                ):
+                    st.session_state.myth_page += 1
+                    st.rerun()
+
+            start = st.session_state.myth_page * page_size
+            for _, row in subset.iloc[start : start + page_size].iterrows():
+                render_myth_card(row)
+
+    if MYTH_PROMPT_FILE.exists():
+        with st.expander("Myth classification prompt (Hebrew)"):
+            with open(MYTH_PROMPT_FILE, "r", encoding="utf-8") as f:
+                prompt_text = f.read()
+            st.html(f'<pre class="prompt-block hebrew">{html_lib.escape(prompt_text)}</pre>')
+
+
 def render_sentence_card(row: pd.Series):
     original = str(row["original_category"]).strip()
     sentence = str(row["origin_sentence"]).strip()
@@ -484,7 +801,13 @@ def render_category_row(
     return picked
 
 
-def render_category_nav(labels: List[str], current_idx: int, key_prefix: str) -> None:
+def render_category_nav(
+    labels: List[str],
+    current_idx: int,
+    key_prefix: str,
+    state_key: str = "selected_category",
+    page_key: str = "page",
+) -> None:
     c_prev, c_mid, c_next = st.columns([1, 2, 1])
     with c_prev:
         if st.button(
@@ -493,8 +816,8 @@ def render_category_nav(labels: List[str], current_idx: int, key_prefix: str) ->
             key=f"{key_prefix}_prev",
             use_container_width=True,
         ):
-            st.session_state.selected_category = labels[current_idx - 1]
-            st.session_state.page = 0
+            st.session_state[state_key] = labels[current_idx - 1]
+            st.session_state[page_key] = 0
             st.rerun()
     with c_mid:
         st.markdown(
@@ -508,8 +831,8 @@ def render_category_nav(labels: List[str], current_idx: int, key_prefix: str) ->
             key=f"{key_prefix}_next",
             use_container_width=True,
         ):
-            st.session_state.selected_category = labels[current_idx + 1]
-            st.session_state.page = 0
+            st.session_state[state_key] = labels[current_idx + 1]
+            st.session_state[page_key] = 0
             st.rerun()
 
 
@@ -548,9 +871,16 @@ def main():
     c3.metric("Not relevant", f"{counts.get(NOT_RELEVANT, 0):,}")
     c4.metric("Categories", len(ordered_labels) - 1)
 
-    tab_overview, tab_browse, tab_prompt = st.tabs(
-        ["Distribution", "Sentences by category", "Experiment & prompt"]
-    )
+    tab_labels = ["Distribution", "Sentences by category", "Experiment & prompt"]
+    has_myth = _has_myth_results(experiment_id)
+    if has_myth:
+        tab_labels.insert(2, "Myth analysis")
+
+    tabs = st.tabs(tab_labels)
+    tab_overview = tabs[0]
+    tab_browse = tabs[1]
+    tab_myth = tabs[2] if has_myth else None
+    tab_prompt = tabs[3] if has_myth else tabs[2]
 
     with tab_overview:
         exclude_unknown = st.checkbox("Exclude not relevant from distribution", value=False)
@@ -690,6 +1020,10 @@ def main():
                 start = st.session_state.page * page_size
                 for _, row in subset.iloc[start : start + page_size].iterrows():
                     render_sentence_card(row)
+
+    if tab_myth is not None:
+        with tab_myth:
+            render_myth_panel(experiment_id)
 
     with tab_prompt:
         render_prompt_panel(metadata)
