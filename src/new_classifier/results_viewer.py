@@ -21,12 +21,15 @@ from src.utils.category_parser import (
     parse_category_response,
     parse_classification_response,
 )
+from src.utils.lying_woman_myth_prompt import (
+    MYTH_CLASSIFICATION_PROMPT_TEMPLATE,
+    MYTH_SYSTEM_PROMPT,
+)
 DATA_DIR = PROJECT_ROOT / "data"
 EXPERIMENTS_DIR = DATA_DIR / "experiments"
 EXPERIMENT_RESULTS_NAME = "classification_results.csv"
 EXPERIMENT_MYTH_RESULTS_NAME = "classification_results_with_myth.csv"
 EXPERIMENT_METADATA_NAME = "metadata.json"
-MYTH_PROMPT_FILE = PROJECT_ROOT / "src" / "utils" / "lying_woman_myth_prompt.txt"
 
 LEGACY_RESULTS_FILE = DATA_DIR / "categories_agglomerative_k8_classification_results.csv"
 ORIGIN_LABELS_FILE = DATA_DIR / "results.csv"
@@ -55,9 +58,12 @@ html, body, [class*="css"] {
 
 .hebrew {
     font-family: 'Heebo', 'Arial Hebrew', 'David', sans-serif;
+}
+
+.rtl-content {
     direction: rtl;
     text-align: right;
-    unicode-bidi: plaintext;
+    unicode-bidi: isolate;
 }
 
 .stApp {
@@ -93,6 +99,8 @@ html, body, [class*="css"] {
     font-size: 1.1rem;
     font-weight: 500;
     color: #0f172a;
+    direction: rtl;
+    text-align: right;
 }
 
 .card-divider {
@@ -121,6 +129,8 @@ html, body, [class*="css"] {
     line-height: 1.55;
     border: 1px solid #fde68a;
     margin-bottom: 0.75rem;
+    direction: rtl;
+    text-align: right;
 }
 
 .new-category-tag {
@@ -133,6 +143,8 @@ html, body, [class*="css"] {
     line-height: 1.5;
     border: 1px solid #bfdbfe;
     margin-bottom: 0.75rem;
+    direction: rtl;
+    text-align: right;
 }
 
 .origin-tag {
@@ -144,6 +156,8 @@ html, body, [class*="css"] {
     padding: 0.45rem 0.65rem;
     line-height: 1.55;
     border: 1px solid #e2e8f0;
+    direction: rtl;
+    text-align: right;
 }
 
 .panel-title {
@@ -200,8 +214,6 @@ html, body, [class*="css"] {
 }
 
 .prompt-block {
-    direction: rtl;
-    text-align: right;
     font-family: 'Heebo', 'Arial Hebrew', sans-serif;
     white-space: pre-wrap;
     word-wrap: break-word;
@@ -221,7 +233,8 @@ html, body, [class*="css"] {
     padding: 0.1rem 0.35rem;
     border-radius: 4px;
     direction: ltr;
-    unicode-bidi: embed;
+    unicode-bidi: isolate;
+    display: inline-block;
     font-weight: 600;
 }
 
@@ -238,6 +251,8 @@ html, body, [class*="css"] {
     padding: 0.5rem 0.65rem;
     line-height: 1.5;
     margin-bottom: 0.75rem;
+    direction: rtl;
+    text-align: right;
 }
 
 .myth-polarity-נדחה {
@@ -274,6 +289,8 @@ html, body, [class*="css"] {
     line-height: 1.55;
     border: 1px solid #ddd6fe;
     margin-bottom: 0.75rem;
+    direction: rtl;
+    text-align: right;
 }
 
 .myth-invokes-tag {
@@ -281,6 +298,8 @@ html, body, [class*="css"] {
     font-weight: 600;
     color: #334155;
     margin-bottom: 0.75rem;
+    direction: rtl;
+    text-align: right;
 }
 </style>
 """
@@ -478,6 +497,15 @@ def _highlight_placeholder(text: str, placeholder: str) -> str:
     )
 
 
+def _rtl_prompt_html(inner_html: str) -> str:
+    """Wrap prompt HTML in a proper Hebrew RTL block (dir + lang + isolate)."""
+    return (
+        f'<div class="prompt-block hebrew rtl-content" dir="rtl" lang="he">'
+        f"{inner_html}"
+        f"</div>"
+    )
+
+
 def render_prompt_panel(metadata: Dict[str, Any]) -> None:
     if not metadata:
         st.info("No experiment metadata found for this run.")
@@ -502,12 +530,10 @@ def render_prompt_panel(metadata: Dict[str, Any]) -> None:
     placeholder = prompt.get("sentence_placeholder", "<SENTENCE>")
 
     st.markdown("#### System prompt")
-    st.html(f'<pre class="prompt-block hebrew">{html_lib.escape(system_prompt)}</pre>')
+    st.html(_rtl_prompt_html(html_lib.escape(system_prompt)))
 
     st.markdown("#### User prompt template")
-    st.html(
-        f'<pre class="prompt-block hebrew">{_highlight_placeholder(user_prompt, placeholder)}</pre>'
-    )
+    st.html(_rtl_prompt_html(_highlight_placeholder(user_prompt, placeholder)))
 
     with st.expander("Raw metadata (JSON)"):
         st.code(json.dumps(metadata, ensure_ascii=False, indent=2), language="json")
@@ -559,7 +585,24 @@ def myth_polarity_label(polarity: str, counts: pd.Series, total: int) -> str:
     return f"{display}  ·  {count} ({pct:.0f}%)"
 
 
-def render_myth_panel(experiment_id: str) -> None:
+def render_myth_prompt_panel() -> None:
+    st.markdown(
+        '<p class="exp-meta">Prompts from lying_woman_myth_prompt.py (used by classify_myth.py).</p>',
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("#### System prompt")
+    st.html(_rtl_prompt_html(html_lib.escape(MYTH_SYSTEM_PROMPT.strip())))
+
+    st.markdown("#### User prompt template")
+    st.html(
+        _rtl_prompt_html(
+            _highlight_placeholder(MYTH_CLASSIFICATION_PROMPT_TEMPLATE.strip(), "{sentence}")
+        )
+    )
+
+
+def render_myth_annotations_panel(experiment_id: str) -> None:
     myth_df = load_myth_data(experiment_id)
     if myth_df.empty:
         st.info("No myth annotations found for this experiment.")
@@ -729,11 +772,15 @@ def render_myth_panel(experiment_id: str) -> None:
             for _, row in subset.iloc[start : start + page_size].iterrows():
                 render_myth_card(row)
 
-    if MYTH_PROMPT_FILE.exists():
-        with st.expander("Myth classification prompt (Hebrew)"):
-            with open(MYTH_PROMPT_FILE, "r", encoding="utf-8") as f:
-                prompt_text = f.read()
-            st.html(f'<pre class="prompt-block hebrew">{html_lib.escape(prompt_text)}</pre>')
+
+def render_myth_panel(experiment_id: str) -> None:
+    tab_annotations, tab_myth_prompt = st.tabs(["Annotations", "Myth prompt"])
+
+    with tab_myth_prompt:
+        render_myth_prompt_panel()
+
+    with tab_annotations:
+        render_myth_annotations_panel(experiment_id)
 
 
 def render_sentence_card(row: pd.Series):

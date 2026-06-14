@@ -17,9 +17,9 @@ from src.utils.constants import (
     LLMTypes,
 )
 from src.utils.gemini_classifier import GeminiClassifier
-
-PROMPT_FILE = (
-    Path(__file__).parent.parent / "utils" / "lying_woman_myth_prompt.txt"
+from src.utils.lying_woman_myth_prompt import (
+    MYTH_CLASSIFICATION_PROMPT_TEMPLATE,
+    MYTH_SYSTEM_PROMPT,
 )
 
 ORIGINAL_COLUMNS = ["sentence_id", "origin_sentence", "category", "new_category"]
@@ -84,13 +84,15 @@ def parse_args():
     return parser.parse_args()
 
 
-def load_prompt_template() -> str:
-    with open(PROMPT_FILE, "r", encoding="utf-8") as f:
-        return f.read()
+def build_myth_prompt(sentence: str) -> str:
+    return MYTH_CLASSIFICATION_PROMPT_TEMPLATE.format(sentence=sentence)
 
 
-def build_prompt(template: str, sentence: str) -> str:
-    return template.replace("{SENTENCE}", sentence)
+def call_myth_classifier(classifier: GeminiClassifier, sentence: str) -> str:
+    return classifier.generate(
+        build_myth_prompt(sentence),
+        system_instruction=MYTH_SYSTEM_PROMPT,
+    )
 
 
 def _extract_json_text(raw: str) -> str:
@@ -184,13 +186,15 @@ def apply_myth_fields(row: Dict, raw: str) -> Dict:
     return row
 
 
-def run_test(classifier: GeminiClassifier, template: str, row: pd.Series) -> None:
-    prompt = build_prompt(template, row["origin_sentence"])
-    raw = classifier.generate(prompt)
+def run_test(classifier: GeminiClassifier, row: pd.Series) -> None:
+    prompt = build_myth_prompt(row["origin_sentence"])
+    raw = call_myth_classifier(classifier, row["origin_sentence"])
     parsed, ok = parse_myth_response(raw)
 
     print("=== sentence_id ===")
     print(row["sentence_id"])
+    print("\n=== user prompt ===")
+    print(prompt)
     print("\n=== raw model output ===")
     print(raw)
     print("\n=== parsed fields ===")
@@ -210,7 +214,6 @@ def run_test(classifier: GeminiClassifier, template: str, row: pd.Series) -> Non
 
 def classify_rows(
     classifier: GeminiClassifier,
-    template: str,
     results_df: pd.DataFrame,
     to_process: pd.DataFrame,
     output_file: Path,
@@ -226,7 +229,7 @@ def classify_rows(
 
     def classify_one(row: pd.Series) -> Tuple[str, Dict]:
         sentence_id = str(row["sentence_id"])
-        raw = classifier.generate(build_prompt(template, row["origin_sentence"]))
+        raw = call_myth_classifier(classifier, row["origin_sentence"])
         updated = apply_myth_fields(row.to_dict(), raw)
         return sentence_id, updated
 
@@ -277,7 +280,6 @@ def main():
     if not input_file.exists():
         raise FileNotFoundError(f"Input not found: {input_file}")
 
-    template = load_prompt_template()
     input_df = pd.read_csv(input_file)
     input_df["sentence_id"] = input_df["sentence_id"].astype(str)
 
@@ -289,7 +291,7 @@ def main():
     )
 
     if args.test:
-        run_test(classifier, template, input_df.iloc[0])
+        run_test(classifier, input_df.iloc[0])
         return
 
     results_df = load_results(input_df, output_file)
@@ -308,7 +310,6 @@ def main():
 
     results_df = classify_rows(
         classifier=classifier,
-        template=template,
         results_df=results_df,
         to_process=to_process,
         output_file=output_file,
