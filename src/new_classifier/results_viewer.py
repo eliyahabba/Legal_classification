@@ -100,6 +100,30 @@ html, body, [class*="css"] {
     text-align: left;
 }
 
+.reasoning-tag {
+    font-size: 0.9rem;
+    font-weight: 400;
+    color: #334155;
+    background: #fffbeb;
+    border-radius: 6px;
+    padding: 0.5rem 0.65rem;
+    line-height: 1.55;
+    border: 1px solid #fde68a;
+    margin-bottom: 0.75rem;
+}
+
+.new-category-tag {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #1e40af;
+    background: #eff6ff;
+    border-radius: 6px;
+    padding: 0.5rem 0.65rem;
+    line-height: 1.5;
+    border: 1px solid #bfdbfe;
+    margin-bottom: 0.75rem;
+}
+
 .origin-tag {
     font-size: 0.88rem;
     font-weight: 400;
@@ -203,6 +227,61 @@ def _normalize_sentence(text: str) -> str:
     return str(text).strip().replace("  ", " ")
 
 
+REASONING_PREFIX = "נימוק:"
+CATEGORY_PREFIX = "קטגוריה:"
+
+
+def _strip_category_number(text: str) -> str:
+    return re.sub(r"^\d+\s*:\s*", "", text.strip()).strip()
+
+
+def _match_known_category(text: str, known_labels: set) -> str:
+    text = _strip_category_number(text.splitlines()[0].strip())
+    if not text:
+        return NOT_RELEVANT
+    if text in known_labels:
+        return text
+    if text == NOT_RELEVANT or "לא רלוונטי" in text:
+        return NOT_RELEVANT
+    for label in known_labels:
+        if label in text or text in label:
+            return label
+    return NOT_RELEVANT
+
+
+def parse_classification_output(raw: str, known_labels: set) -> Tuple[str, Optional[str]]:
+    text = str(raw).strip()
+    if not text:
+        return NOT_RELEVANT, None
+
+    if CATEGORY_PREFIX not in text and REASONING_PREFIX not in text:
+        return _match_known_category(text, known_labels), None
+
+    reasoning = None
+    category_text = text
+
+    if CATEGORY_PREFIX in text:
+        reasoning_block, category_text = text.split(CATEGORY_PREFIX, 1)
+        category_text = category_text.strip()
+        reasoning_block = reasoning_block.strip()
+        if REASONING_PREFIX in reasoning_block:
+            reasoning = reasoning_block.split(REASONING_PREFIX, 1)[1].strip()
+        elif reasoning_block:
+            reasoning = reasoning_block
+    elif REASONING_PREFIX in text:
+        reasoning = text.split(REASONING_PREFIX, 1)[1].strip()
+        if CATEGORY_PREFIX in reasoning:
+            reasoning, category_text = reasoning.split(CATEGORY_PREFIX, 1)
+            reasoning = reasoning.strip()
+            category_text = category_text.strip()
+        else:
+            category_text = NOT_RELEVANT
+
+    reasoning = reasoning.splitlines()[0].strip() if reasoning else None
+    category = _match_known_category(category_text, known_labels)
+    return category, reasoning or None
+
+
 def list_experiment_dirs() -> List[Path]:
     if not EXPERIMENTS_DIR.exists():
         return []
@@ -263,9 +342,11 @@ def load_data(experiment_id: str) -> Tuple[pd.DataFrame, List[str], Dict[str, An
     results["original_category"] = results["original_category"].fillna(results["category"])
 
     known_labels = set(categories["label"])
-    results["new_category"] = results["new_category"].apply(
-        lambda x: NOT_RELEVANT if x not in known_labels else x
+    parsed = results["new_category"].apply(
+        lambda x: parse_classification_output(x, known_labels)
     )
+    results["model_reasoning"] = parsed.apply(lambda x: x[1])
+    results["new_category"] = parsed.apply(lambda x: x[0])
 
     ordered_labels = categories["label"].tolist() + [NOT_RELEVANT]
     return results, ordered_labels, metadata
@@ -341,11 +422,24 @@ def render_prompt_panel(metadata: Dict[str, Any]) -> None:
 def render_sentence_card(row: pd.Series):
     original = str(row["original_category"]).strip()
     sentence = str(row["origin_sentence"]).strip()
+    new_category = str(row["new_category"]).strip()
+    reasoning = row.get("model_reasoning")
+    reasoning_text = str(reasoning).strip() if pd.notna(reasoning) and str(reasoning).strip() else ""
 
     parts = [
         '<div class="sentence-card">',
         f'<div class="sentence-body hebrew">{html_lib.escape(sentence)}</div>',
+        '<div class="card-divider"></div>',
+        '<div class="origin-label">New category</div>',
+        f'<div class="new-category-tag hebrew">{html_lib.escape(new_category)}</div>',
     ]
+    if reasoning_text:
+        parts.extend(
+            [
+                '<div class="origin-label">Reasoning</div>',
+                f'<div class="reasoning-tag hebrew">{html_lib.escape(reasoning_text)}</div>',
+            ]
+        )
     if original and original != NOT_RELEVANT:
         parts.extend(
             [
