@@ -8,6 +8,13 @@ from typing import Dict, Optional, Tuple
 
 import pandas as pd
 
+from src.new_classifier.experiment_manager import (
+    EXPERIMENT_RESULTS_NAME,
+    MYTH_METADATA_NAME,
+    MYTH_RESULTS_NAME,
+    finalize_myth_metadata,
+    initialize_myth_metadata,
+)
 from src.utils.config import load_config
 from src.utils.constants import (
     DEFAULT_MAX_TOKENS,
@@ -20,6 +27,7 @@ from src.utils.gemini_classifier import GeminiClassifier
 from src.utils.lying_woman_myth_prompt import (
     MYTH_CLASSIFICATION_PROMPT_TEMPLATE,
     MYTH_SYSTEM_PROMPT,
+    build_myth_prompt_snapshot,
 )
 
 ORIGINAL_COLUMNS = ["sentence_id", "origin_sentence", "category", "new_category"]
@@ -36,11 +44,12 @@ SAVE_EVERY = 10
 DEFAULT_WORKERS = 5
 
 
-def experiment_paths(exp: str) -> Tuple[Path, Path]:
+def resolve_myth_paths(exp: str) -> Tuple[Path, Path, Path]:
     exp_dir = EXPERIMENTS_DIR / exp
     return (
-        exp_dir / "classification_results.csv",
-        exp_dir / "classification_results_with_myth.csv",
+        exp_dir,
+        exp_dir / EXPERIMENT_RESULTS_NAME,
+        exp_dir / MYTH_RESULTS_NAME,
     )
 
 
@@ -276,12 +285,13 @@ def print_summary(results_df: pd.DataFrame) -> None:
 
 def main():
     args = parse_args()
-    input_file, output_file = experiment_paths(args.exp)
+    exp_dir, input_file, output_file = resolve_myth_paths(args.exp)
     if not input_file.exists():
         raise FileNotFoundError(f"Input not found: {input_file}")
 
     input_df = pd.read_csv(input_file)
     input_df["sentence_id"] = input_df["sentence_id"].astype(str)
+    prompt_snapshot = build_myth_prompt_snapshot()
 
     classifier = GeminiClassifier(
         api_key=load_config(LLMTypes.GEMINI),
@@ -294,10 +304,20 @@ def main():
         run_test(classifier, input_df.iloc[0])
         return
 
+    initialize_myth_metadata(
+        exp_dir=exp_dir,
+        provider=LLMTypes.GEMINI,
+        model=args.model,
+        temperature=args.temperature,
+        max_tokens=args.max_tokens,
+        prompt_snapshot=prompt_snapshot,
+    )
+
     results_df = load_results(input_df, output_file)
     to_process = results_df[~results_df.apply(has_myth_label, axis=1)]
 
     print(f"Experiment: {args.exp}")
+    print(f"Myth metadata: {exp_dir / MYTH_METADATA_NAME}")
     print(f"Input: {input_file} ({len(input_df)} rows)")
     print(f"Output: {output_file}")
     print(f"Model: {args.model}")
@@ -305,6 +325,7 @@ def main():
 
     if len(to_process) == 0:
         print("All rows already labeled.")
+        finalize_myth_metadata(exp_dir, output_file)
         print_summary(results_df)
         return
 
@@ -316,6 +337,7 @@ def main():
         workers=args.workers,
     )
     save_results(results_df, output_file)
+    finalize_myth_metadata(exp_dir, output_file)
     print_summary(results_df)
 
 

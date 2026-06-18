@@ -21,15 +21,12 @@ from src.utils.category_parser import (
     parse_category_response,
     parse_classification_response,
 )
-from src.utils.lying_woman_myth_prompt import (
-    MYTH_CLASSIFICATION_PROMPT_TEMPLATE,
-    MYTH_SYSTEM_PROMPT,
-)
 DATA_DIR = PROJECT_ROOT / "data"
 EXPERIMENTS_DIR = DATA_DIR / "experiments"
 EXPERIMENT_RESULTS_NAME = "classification_results.csv"
 EXPERIMENT_MYTH_RESULTS_NAME = "classification_results_with_myth.csv"
 EXPERIMENT_METADATA_NAME = "metadata.json"
+EXPERIMENT_MYTH_METADATA_NAME = "myth_metadata.json"
 
 LEGACY_RESULTS_FILE = DATA_DIR / "categories_agglomerative_k8_classification_results.csv"
 ORIGIN_LABELS_FILE = DATA_DIR / "results.csv"
@@ -368,6 +365,15 @@ def load_experiment_metadata(exp_dir: Path) -> Optional[Dict[str, Any]]:
         return json.load(f)
 
 
+def load_myth_metadata(exp_dir: Path) -> Optional[Dict[str, Any]]:
+    metadata_path = exp_dir / EXPERIMENT_MYTH_METADATA_NAME
+    if not metadata_path.exists():
+        return None
+
+    with open(metadata_path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
 def _resolve_categories_file(metadata: Optional[Dict[str, Any]]) -> Path:
     if metadata and metadata.get("categories_file"):
         path = Path(metadata["categories_file"])
@@ -388,6 +394,10 @@ def _myth_results_path(experiment_id: str) -> Path:
 
 def _has_myth_results(experiment_id: str) -> bool:
     return _myth_results_path(experiment_id).exists()
+
+
+def _has_myth_metadata(experiment_id: str) -> bool:
+    return (EXPERIMENTS_DIR / experiment_id / EXPERIMENT_MYTH_METADATA_NAME).exists()
 
 
 def _format_invokes_myth(value: object) -> str:
@@ -585,21 +595,37 @@ def myth_polarity_label(polarity: str, counts: pd.Series, total: int) -> str:
     return f"{display}  ·  {count} ({pct:.0f}%)"
 
 
-def render_myth_prompt_panel() -> None:
+def render_myth_prompt_panel(metadata: Optional[Dict[str, Any]]) -> None:
+    if not metadata:
+        st.info("No myth metadata found for this experiment.")
+        return
+
+    prompt = metadata.get("prompt", {})
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Provider", metadata.get("provider", "—"))
+    c2.metric("Model", metadata.get("model", "—"))
+    c3.metric("Date", metadata.get("date", "—"))
+    c4.metric("Results", f"{metadata.get('result_count', '—'):,}" if metadata.get("result_count") else "—")
+
     st.markdown(
-        '<p class="exp-meta">Prompts from lying_woman_myth_prompt.py (used by classify_myth.py).</p>',
+        f'<p class="exp-meta">Input: {html_lib.escape(str(metadata.get("input_file", "—")))}'
+        f" · output: {html_lib.escape(str(metadata.get('results_file', '—')))}"
+        f" · temperature: {metadata.get('temperature', '—')}</p>",
         unsafe_allow_html=True,
     )
 
+    system_prompt = prompt.get("system_prompt", "")
+    user_prompt = prompt.get("user_prompt_template", "")
+    placeholder = prompt.get("sentence_placeholder", "<SENTENCE>")
+
     st.markdown("#### System prompt")
-    st.html(_rtl_prompt_html(html_lib.escape(MYTH_SYSTEM_PROMPT.strip())))
+    st.html(_rtl_prompt_html(html_lib.escape(system_prompt)))
 
     st.markdown("#### User prompt template")
-    st.html(
-        _rtl_prompt_html(
-            _highlight_placeholder(MYTH_CLASSIFICATION_PROMPT_TEMPLATE.strip(), "{sentence}")
-        )
-    )
+    st.html(_rtl_prompt_html(_highlight_placeholder(user_prompt, placeholder)))
+
+    with st.expander("Raw myth metadata (JSON)"):
+        st.code(json.dumps(metadata, ensure_ascii=False, indent=2), language="json")
 
 
 def render_myth_annotations_panel(experiment_id: str) -> None:
@@ -774,10 +800,11 @@ def render_myth_annotations_panel(experiment_id: str) -> None:
 
 
 def render_myth_panel(experiment_id: str) -> None:
+    myth_metadata = load_myth_metadata(EXPERIMENTS_DIR / experiment_id)
     tab_annotations, tab_myth_prompt = st.tabs(["Annotations", "Myth prompt"])
 
     with tab_myth_prompt:
-        render_myth_prompt_panel()
+        render_myth_prompt_panel(myth_metadata)
 
     with tab_annotations:
         render_myth_annotations_panel(experiment_id)
@@ -919,7 +946,7 @@ def main():
     c4.metric("Categories", len(ordered_labels) - 1)
 
     tab_labels = ["Distribution", "Sentences by category", "Experiment & prompt"]
-    has_myth = _has_myth_results(experiment_id)
+    has_myth = _has_myth_results(experiment_id) or _has_myth_metadata(experiment_id)
     if has_myth:
         tab_labels.insert(2, "Myth analysis")
 

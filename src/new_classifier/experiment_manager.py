@@ -20,6 +20,8 @@ from src.utils.prompts import (
 EXPERIMENT_RESULTS_NAME = "classification_results.csv"
 EXPERIMENT_METADATA_NAME = "metadata.json"
 EXPERIMENT_BATCH_STATUS_NAME = "batch_status.jsonl"
+MYTH_RESULTS_NAME = "classification_results_with_myth.csv"
+MYTH_METADATA_NAME = "myth_metadata.json"
 SENTENCE_PLACEHOLDER = "<SENTENCE>"
 
 
@@ -245,6 +247,102 @@ def finalize_experiment_metadata(exp_dir: Path, results_file: Path) -> None:
     if not metadata.get("date"):
         metadata["date"] = date.today().isoformat()
     save_experiment_metadata(exp_dir, metadata)
+
+
+def load_myth_metadata(exp_dir: Path) -> Optional[Dict[str, Any]]:
+    metadata_path = exp_dir / MYTH_METADATA_NAME
+    if not metadata_path.exists():
+        return None
+
+    with open(metadata_path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def count_myth_results(exp_dir: Path) -> int:
+    results_path = exp_dir / MYTH_RESULTS_NAME
+    if not results_path.exists():
+        return 0
+    return len(pd.read_csv(results_path))
+
+
+def build_myth_metadata(
+    experiment_id: str,
+    provider: str,
+    model: str,
+    temperature: float,
+    max_tokens: int,
+    prompt_snapshot: Dict[str, Any],
+    match_key: str,
+    run_date: Optional[str] = None,
+    result_count: Optional[int] = None,
+) -> Dict[str, Any]:
+    return {
+        "experiment_id": experiment_id,
+        "date": run_date or date.today().isoformat(),
+        "provider": provider,
+        "model": model,
+        "temperature": temperature,
+        "max_tokens": max_tokens,
+        "match_key": match_key,
+        "match_params": {
+            "provider": provider,
+            "model": model,
+        },
+        "prompt": prompt_snapshot,
+        "input_file": EXPERIMENT_RESULTS_NAME,
+        "results_file": MYTH_RESULTS_NAME,
+        "result_count": result_count,
+    }
+
+
+def save_myth_metadata(exp_dir: Path, metadata: Dict[str, Any]) -> Path:
+    exp_dir.mkdir(parents=True, exist_ok=True)
+    metadata_path = exp_dir / MYTH_METADATA_NAME
+    with open(metadata_path, "w", encoding="utf-8") as f:
+        json.dump(metadata, f, ensure_ascii=False, indent=2)
+    return metadata_path
+
+
+def initialize_myth_metadata(
+    exp_dir: Path,
+    provider: str,
+    model: str,
+    temperature: float,
+    max_tokens: int,
+    prompt_snapshot: Dict[str, Any],
+    run_date: Optional[str] = None,
+) -> Dict[str, Any]:
+    existing = load_myth_metadata(exp_dir)
+    if existing:
+        existing["result_count"] = count_myth_results(exp_dir)
+        save_myth_metadata(exp_dir, existing)
+        return existing
+
+    match_key = build_match_key(provider, model, prompt_snapshot)
+    metadata = build_myth_metadata(
+        experiment_id=exp_dir.name,
+        provider=provider,
+        model=model,
+        temperature=temperature,
+        max_tokens=max_tokens,
+        prompt_snapshot=prompt_snapshot,
+        match_key=match_key,
+        run_date=run_date,
+        result_count=count_myth_results(exp_dir),
+    )
+    save_myth_metadata(exp_dir, metadata)
+    return metadata
+
+
+def finalize_myth_metadata(exp_dir: Path, results_file: Path) -> None:
+    metadata = load_myth_metadata(exp_dir)
+    if not metadata:
+        return
+
+    metadata["result_count"] = count_myth_results(exp_dir) if results_file.exists() else 0
+    if not metadata.get("date"):
+        metadata["date"] = date.today().isoformat()
+    save_myth_metadata(exp_dir, metadata)
 
 
 def backfill_experiment_from_csv(
