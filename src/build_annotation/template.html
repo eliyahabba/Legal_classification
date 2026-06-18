@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>תיקוף סיווג משפטי</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F7F5F0; --ink:#1F1D1A; --muted:#6B6660; --line:#E4DFD5;
+    --accent:#6E2B2B; --accent-soft:#f0e6e3;
+    --yes:#2E6B4F; --yes-soft:#e6efe9;
+    --no:#A14233; --no-soft:#f3e4df;
+    --card:#FFFFFF;
+    --serif:'Frank Ruhl Libre', Georgia, 'Times New Roman', serif;
+    --sans:'Heebo', system-ui, 'Segoe UI', Arial, sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--paper); color:var(--ink); font-family:var(--sans); line-height:1.6; -webkit-font-smoothing:antialiased}
+
+  /* ---- top bar ---- */
+  .bar{position:sticky; top:0; z-index:20; background:rgba(247,245,240,.92); backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line); display:flex; align-items:center; gap:14px; padding:12px 18px}
+  .bar .who{font-weight:500; font-size:16px}
+  .bar .who input{font:inherit; font-weight:500; border:none; background:transparent; color:var(--ink);
+    border-bottom:1px dashed var(--line); width:7em; padding:2px 0}
+  .bar .who input:focus{outline:none; border-bottom-color:var(--accent)}
+  .bar .exp{font-size:16px; color:var(--muted)}
+  .bar .exp b{color:var(--ink)}
+  .bar .exp b{color:var(--ink); font-weight:500}
+  .bar .spacer{flex:1}
+  .navtoggle{display:none; font:inherit; font-size:14px; background:var(--card); border:1.5px solid var(--line);
+    border-radius:8px; padding:7px 12px; cursor:pointer; color:var(--ink)}
+  .count{font-size:13px; color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap}
+  .saved{font-size:12px; color:var(--yes); display:flex; align-items:center; gap:5px; opacity:0; transition:opacity .3s}
+  .saved.show{opacity:1}
+  .saved .dot{width:7px; height:7px; border-radius:50%; background:var(--yes)}
+  .track{height:3px; background:var(--line); display:flex}
+  .track .fill{height:100%; background:var(--accent); width:0; transition:width .35s ease}
+
+  /* ---- layout: sidebar (right, RTL) + main ---- */
+  .layout{display:flex; align-items:flex-start; max-width:1060px; margin:0 auto}
+  .side{width:264px; flex:none; border-inline-end:1px solid var(--line); padding:20px 16px;
+    position:sticky; top:49px; max-height:calc(100vh - 49px); overflow:auto}
+  .side h2{font-size:12px; letter-spacing:.06em; color:var(--muted); margin:0 0 12px; font-weight:500}
+  .cat-item{display:flex; align-items:center; gap:8px; width:100%; text-align:start; font:inherit; font-size:14px;
+    background:none; border:none; border-radius:8px; padding:9px 10px; cursor:pointer; color:var(--ink)}
+  .cat-item:hover{background:var(--accent-soft)}
+  .cat-item.active{background:var(--accent-soft); color:var(--accent); font-weight:500}
+  .cat-item .lbl{flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .cat-item .cnt{font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap}
+  .cat-item.active .cnt{color:var(--accent)}
+  .cat-item.full .cnt{color:var(--yes)}
+  .side .sep{height:1px; background:var(--line); margin:12px 4px}
+  .switch{display:flex; align-items:center; gap:9px; font-size:14px; padding:6px 10px; cursor:pointer}
+  .switch input{accent-color:var(--accent); width:16px; height:16px}
+  .side-foot{margin-top:14px; display:flex; flex-direction:column; gap:8px}
+  .side-foot button{font:inherit; font-size:13px; background:var(--card); border:1.5px solid var(--line);
+    border-radius:8px; padding:9px 12px; cursor:pointer; color:var(--ink)}
+  .side-foot button:hover{border-color:#cfc8bb}
+  .side-foot .foot-note{font-size:12px; color:var(--muted); line-height:1.5; margin:0 0 4px}
+  .side-foot button.primary-foot{background:var(--accent); border-color:var(--accent); color:#fff; font-weight:500}
+  .side-foot button.primary-foot:hover{background:#5d2424; border-color:#5d2424}
+
+  .main{flex:1; min-width:0}
+
+  /* ---- card ---- */
+  .wrap{max-width:720px; margin:0 auto; padding:40px 22px 120px}
+  .eyebrow{font-size:12px; letter-spacing:.06em; color:var(--muted); margin-bottom:8px}
+  .tag{display:inline-block; background:var(--accent-soft); color:var(--accent); border:1px solid #e3cfc9;
+    border-radius:6px; padding:8px 14px; font-weight:500; font-size:15px; margin-bottom:28px}
+  .excerpt{font-family:var(--serif); font-size:25px; line-height:1.75; font-weight:400;
+    border-right:3px solid var(--accent); padding:4px 20px 4px 0; margin:0 0 20px; color:#161412}
+  .peeks{display:flex; flex-wrap:wrap; gap:10px; margin:0 0 30px}
+  .peek{border:1px solid var(--line); border-radius:8px; background:var(--card); max-width:100%}
+  .peek summary{cursor:pointer; list-style:none; padding:8px 13px; font-size:13px; color:var(--muted); user-select:none}
+  .peek summary::-webkit-details-marker{display:none}
+  .peek summary::before{content:"▸ "; color:var(--accent)}
+  .peek[open] summary::before{content:"▾ "}
+  .peek[open] summary{color:var(--accent); border-bottom:1px solid var(--line)}
+  .peek-body{padding:12px 14px; font-size:14px; line-height:1.6; color:#2b2825; max-width:640px}
+  .q{font-size:16px; font-weight:500; margin:0 0 14px}
+  .choices{display:flex; gap:12px; margin-bottom:6px}
+  .choice{flex:1; padding:16px 18px; border:1.5px solid var(--line); border-radius:10px; background:var(--card);
+    font:inherit; font-size:16px; font-weight:500; cursor:pointer; transition:border-color .15s, background .15s;
+    color:var(--ink); display:flex; align-items:center; justify-content:flex-start; gap:12px; text-align:start}
+  .choice:hover{border-color:#cfc8bb}
+  .choice .k{font-size:12px; color:var(--muted); font-weight:400; line-height:1; background:var(--paper);
+    border:1px solid var(--line); border-radius:5px; padding:3px 7px; unicode-bidi:isolate}
+  .choice.sel-yes{border-color:var(--yes); background:var(--yes-soft); color:var(--yes)}
+  .choice.sel-no{border-color:var(--no); background:var(--no-soft); color:var(--no)}
+  .reveal{max-height:0; overflow:hidden; transition:max-height .3s ease}
+  .reveal.open{max-height:420px; margin-top:24px}
+  .field-label{font-size:14px; font-weight:500; margin:0 0 8px}
+  select, textarea{width:100%; font:inherit; font-size:15px; color:var(--ink); background:var(--card);
+    border:1.5px solid var(--line); border-radius:9px; padding:12px 14px}
+  select:focus, textarea:focus{outline:none; border-color:var(--accent)}
+  textarea{resize:vertical; min-height:64px; margin-top:6px}
+  .note-lbl{font-size:13px; color:var(--muted); margin:22px 0 0}
+
+  /* ---- bottom nav ---- */
+  .nav{position:fixed; bottom:0; right:0; left:0; background:rgba(247,245,240,.94); backdrop-filter:blur(6px);
+    border-top:1px solid var(--line); display:flex; justify-content:center; padding:14px 20px; z-index:15}
+  .nav .inner{display:flex; gap:12px; width:100%; max-width:720px}
+  .btn{font:inherit; font-size:15px; font-weight:500; padding:12px 22px; border-radius:9px;
+    border:1.5px solid var(--line); background:var(--card); color:var(--ink); cursor:pointer}
+  .btn:hover:not(:disabled){border-color:#cfc8bb}
+  .btn:disabled{opacity:.4; cursor:default}
+  .btn.primary{background:var(--accent); border-color:var(--accent); color:#fff; flex:1}
+  .btn.primary:hover:not(:disabled){background:#5d2424}
+
+  /* ---- done ---- */
+  .done{text-align:center; padding:60px 20px}
+  .done h1{font-family:var(--serif); font-weight:500; font-size:30px; margin:0 0 12px}
+  .done p{color:var(--muted); margin:0 auto 8px; max-width:46ch}
+  .done .actions{display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:28px}
+  .done .btn.primary{flex:none}
+  .small{font-size:13px; color:var(--muted)}
+  .mini{background:none; border:none; color:var(--accent); font:inherit; font-size:13px; cursor:pointer; text-decoration:underline; padding:0}
+
+  .scrim{display:none}
+  .modal{display:none; position:fixed; inset:0; z-index:60; background:rgba(31,29,26,.45);
+    align-items:center; justify-content:center; padding:20px}
+  .modal.open{display:flex}
+  .modal-card{background:var(--paper); border:1px solid var(--line); border-radius:14px;
+    max-width:520px; width:100%; padding:30px 28px; box-shadow:0 14px 40px rgba(0,0,0,.18); max-height:90vh; overflow:auto}
+  .modal-card h2{font-family:var(--serif); font-weight:500; font-size:24px; margin:0 0 18px}
+  ul.help{list-style:none; margin:0 0 24px; padding:0}
+  ul.help li{font-size:15px; line-height:1.65; color:#2b2825; padding:11px 0; border-top:1px solid var(--line)}
+  ul.help li:first-child{border-top:none}
+  ul.help b{color:var(--accent); font-weight:500}
+  .modal-card .btn.primary{width:100%; flex:none}
+  @media (max-width:860px){
+    .navtoggle{display:block}
+    .layout{display:block}
+    .side{position:fixed; top:0; bottom:0; right:0; width:280px; max-height:none; z-index:40;
+      background:var(--paper); transform:translateX(105%); transition:transform .25s ease; border-inline-end:none;
+      border-inline-start:1px solid var(--line); box-shadow:-8px 0 24px rgba(0,0,0,.08)}
+    .side.open{transform:translateX(0)}
+    .scrim.open{display:block; position:fixed; inset:0; background:rgba(0,0,0,.25); z-index:30}
+  }
+  @media (max-width:520px){ .excerpt{font-size:21px} .wrap{padding:28px 16px 120px} .choices{flex-direction:column} }
+  @media (prefers-reduced-motion:reduce){ *{transition:none !important} }
+</style>
+</head>
+<body>
+<div class="bar">
+  <div class="who">מתייגת: <input id="nameInput" spellcheck="false"></div>
+  <div class="exp" id="expWrap">ניסוי: <b id="expName"></b></div>
+  <div class="spacer"></div>
+  <div class="saved" id="saved"><span class="dot"></span>נשמר</div>
+  <div class="count" id="count"></div>
+  <button class="navtoggle" id="helpBtn" style="display:block">הוראות</button>
+  <button class="navtoggle" id="navToggle">ניווט</button>
+</div>
+<div class="track"><div class="fill" id="fill"></div></div>
+
+<div class="layout">
+  <aside class="side" id="side">
+    <h2>ניווט לפי קטגוריה</h2>
+    <div id="catList"></div>
+    <div class="sep"></div>
+    <label class="switch"><input type="checkbox" id="shuf"> סדר אקראי</label>
+    <label class="switch"><input type="checkbox" id="onlyTodo"> הצג רק שאלות שטרם תויגו</label>
+    <div class="side-foot">
+      <p class="foot-note">התשובות נשמרות אוטומטית. בסיום: לחצי "הורדת התשובות" ושלחי לאליה את הקובץ שירד.</p>
+      <button id="saveFile" class="primary-foot">הורדת התשובות</button>
+    </div>
+  </aside>
+  <main class="main"><div id="app"></div></main>
+</div>
+<div class="scrim" id="scrim"></div>
+
+<div class="modal" id="intro">
+  <div class="modal-card">
+    <h2>לפני שמתחילות</h2>
+    <ul class="help">
+      <li><b>מה לעשות:</b> לכל משפט מוצג התיוג שהמודל נתן לו. החליטי אם הוא מתאר את המשפט נכון (כן / לא). אם לא, בחרי את הקטגוריה המתאימה.</li>
+      <li><b>הערה (לא חובה):</b> בכל משפט יש שדה הערה חופשי. אפשר לכתוב בו תובנה שאולי תשמש בהמשך לשיפור המסווג: דפוס בטעויות של המודל, קטגוריה לא ברורה או חופפת, או כל הערה כללית. כל ההערות נשמרות ואפשר לעבור עליהן אחר כך.</li>
+      <li><b>שמירה:</b> התשובות נשמרות אוטומטית אחרי כל משפט. אפשר לסגור את החלון ולחזור מאוחר יותר וההתקדמות תחזור. חשוב לעבוד לכל אורך התהליך על אותו מחשב ואותו דפדפן, ולא לעבור בין מחשבים באמצע.</li>
+      <li><b>בסיום:</b> לחצי על <b>"הורדת התשובות"</b> (בפאנל הצד). יירד קובץ בשם results…json לתיקיית ההורדות, ושלחי אותו לאליה.</li>
+      <li><b>ניווט בצד:</b> בפאנל אפשר לקפוץ לקטגוריה מסוימת ולעבור על המשפטים שלה ברצף, לראות כמה הושלמו בכל קטגוריה, או לסמן "סדר אקראי". בטלפון הפאנל נפתח בכפתור "ניווט" למעלה.</li>
+    </ul>
+    <button class="btn primary" id="introClose">הבנתי, מתחילות</button>
+  </div>
+</div>
+
+<div class="nav" id="navbar">
+  <div class="inner">
+    <button class="btn" id="prev">הקודם</button>
+    <button class="btn primary" id="next">הבא</button>
+  </div>
+</div>
+
+<script>
+const DATA = /*__PAYLOAD__*/;
+const KEY = "legal_annot_" + DATA.annotator_id;
+const OTHER = "אחר (פרטי בהערה)";
+const FLAT_CATS = DATA.category_groups.flatMap(g=>g.items);
+const PREFILL = DATA.prefill || [];            // answers baked in (for a resume file)
+const FSI="\u2068", PDI="\u2069";              // bidi isolation for numbers
+const num = n => FSI + n + PDI;
+
+// ---- state ----
+let state = load();
+let filterCat = null;   // null = all
+let shuffle = false;
+let onlyUnanswered = !!DATA.only_unanswered_default;   // resume files start with only the untagged
+let view = [];          // indices into DATA.items
+let pos = 0;
+
+function freshAnswers(){
+  return DATA.items.map(it=>({ sentence_id:it.id, assigned:it.assigned, shared:it.shared,
+    decision:null, corrected:null, note:"", ts:null }));
+}
+function overlay(target, src){            // copy answered entries from src onto target, by sentence_id
+  const by={}; src.forEach(s=>by[String(s.sentence_id)]=s);
+  target.forEach(a=>{ const s=by[String(a.sentence_id)];
+    if(s && s.decision!=null){ a.decision=s.decision; a.corrected=s.corrected??null; a.note=s.note||''; a.ts=s.ts||a.ts; } });
+}
+function load(){
+  const answers=freshAnswers();
+  if(PREFILL.length) overlay(answers, PREFILL);          // 1) baked-in prior answers
+  let name=DATA.annotator_name;
+  try{ const raw=localStorage.getItem(KEY); if(raw){ const s=JSON.parse(raw);
+    if(s&&s.answers){ overlay(answers, s.answers); if(s.name)name=s.name; } } }catch(e){}  // 2) local work wins
+  return { name, answers };
+}
+function persist(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} flash(); }
+function flash(){ const s=document.getElementById('saved'); s.classList.add('show'); clearTimeout(flash._t); flash._t=setTimeout(()=>s.classList.remove('show'),1200); }
+
+const ansOf = i => state.answers[i];
+const answeredCount = () => state.answers.filter(a=>a.decision!==null).length;
+const isComplete = () => answeredCount()===DATA.items.length;
+function firstUnansweredGlobal(){ return state.answers.findIndex(a=>a.decision===null); }
+function catProgress(cat){ let t=0,d=0; DATA.items.forEach((it,i)=>{ if(it.assigned===cat){t++; if(ansOf(i).decision!==null)d++;} }); return {d,t}; }
+
+// ---- view (filter + order) ----
+function buildView(keepItemIndex){
+  let idxs = DATA.items.map((_,i)=>i);
+  if(filterCat!==null) idxs = idxs.filter(i=>DATA.items[i].assigned===filterCat);
+  if(onlyUnanswered)   idxs = idxs.filter(i=>ansOf(i).decision===null);
+  if(shuffle){ for(let k=idxs.length-1;k>0;k--){ const j=Math.floor(Math.random()*(k+1)); [idxs[k],idxs[j]]=[idxs[j],idxs[k]]; } }
+  view = idxs;
+  if(keepItemIndex!=null && view.indexOf(keepItemIndex)>=0) pos = view.indexOf(keepItemIndex);
+  else { const p = view.findIndex(i=>ansOf(i).decision===null); pos = p>=0?p:0; }
+}
+
+// ---- name ----
+const nameInput=document.getElementById('nameInput');
+nameInput.value = state.name || DATA.annotator_name;
+nameInput.addEventListener('input', ()=>{ state.name=nameInput.value; persist(); });
+if(DATA.experiment){ document.getElementById('expName').textContent=DATA.experiment; }
+else { document.getElementById('expWrap').style.display='none'; }
+
+// ---- sidebar ----
+function renderSide(){
+  const g = catProgress.bind(null);
+  let html = `<button class="cat-item ${filterCat===null?'active':''}" data-cat="__all__">
+      <span class="lbl">הכול</span><span class="cnt">${num(answeredCount())}/${num(DATA.items.length)}</span></button>`;
+  FLAT_CATS.forEach(cat=>{
+    const p=catProgress(cat); const done=p.d===p.t;
+    html += `<button class="cat-item ${filterCat===cat?'active':''} ${done?'full':''}" data-cat="${esc(cat)}" title="${esc(cat)}">
+        <span class="lbl">${esc(cat)}</span><span class="cnt">${num(p.d)}/${num(p.t)}</span></button>`;
+  });
+  const list=document.getElementById('catList');
+  list.innerHTML=html;
+  list.querySelectorAll('.cat-item').forEach(b=>b.onclick=()=>{
+    filterCat = b.dataset.cat==='__all__' ? null : b.dataset.cat;
+    buildView(null); closeSide(); render();
+  });
+}
+function closeSide(){ document.getElementById('side').classList.remove('open'); document.getElementById('scrim').classList.remove('open'); }
+function openSide(){ document.getElementById('side').classList.add('open'); document.getElementById('scrim').classList.add('open'); }
+document.getElementById('navToggle').onclick=openSide;
+document.getElementById('scrim').onclick=closeSide;
+document.getElementById('shuf').onchange=e=>{ shuffle=e.target.checked; buildView(null); render(); };
+document.getElementById('onlyTodo').onchange=e=>{ onlyUnanswered=e.target.checked; buildView(null); render(); };
+
+// ---- main render ----
+const app=document.getElementById('app');
+function render(){
+  renderSide();
+  document.getElementById('fill').style.width=(answeredCount()/DATA.items.length*100)+'%';
+  if(isComplete()){ renderDone(); return; }
+  if(view.length===0){
+    document.getElementById('navbar').style.display='none';
+    document.getElementById('count').textContent = `הושלמו ${num(answeredCount())} מתוך ${num(DATA.items.length)}`;
+    const msg = onlyUnanswered
+      ? (filterCat===null ? 'תייגת את כל השאלות שנותרו. כדי לראות תשובות שכבר תייגת, כבי את "הצג רק שאלות שטרם תויגו".'
+                          : 'בקטגוריה זו אין שאלות שטרם תויגו.')
+      : 'אין שאלות להצגה בתצוגה הנוכחית.';
+    app.innerHTML=`<div class="done"><h1>אין מה להציג</h1><p>${msg}</p></div>`;
+    return;
+  }
+  document.getElementById('navbar').style.display='flex';
+
+  const i=view[pos], it=DATA.items[i], a=ansOf(i);
+  document.getElementById('count').textContent = filterCat===null
+    ? `פריט ${num(pos+1)} מתוך ${num(view.length)} · הושלמו ${num(answeredCount())}`
+    : `קטגוריה זו: פריט ${num(pos+1)} מתוך ${num(view.length)}`;
+
+  const groupsHtml = DATA.category_groups.map((grp,gi)=>{
+    const last = gi===DATA.category_groups.length-1;
+    const items = last ? grp.items.concat([OTHER]) : grp.items;
+    const opts = items.map(c=>`<option value="${esc(c)}" ${a.corrected===c?'selected':''}>${esc(c)}</option>`).join('');
+    return `<optgroup label="${esc(grp.label)}">${opts}</optgroup>`;
+  }).join('');
+
+  app.innerHTML=`
+    <div class="wrap">
+      <div class="eyebrow">התיוג שניתן על-ידי המודל</div>
+      <div class="tag">${esc(it.assigned)}</div>
+      <blockquote class="excerpt">${esc(it.sentence)}</blockquote>
+      <div class="peeks">
+        ${it.old_category ? `<details class="peek"><summary>הקטגוריה הישנה (מהמאמר המקורי)</summary><div class="peek-body">${esc(it.old_category)}</div></details>` : ``}
+        ${it.reasoning ? `<details class="peek"><summary>הנימוק של המודל לבחירת הקטגוריה הנוכחית</summary><div class="peek-body">${esc(it.reasoning)}</div></details>` : ``}
+      </div>
+      <p class="q">האם התיוג מתאר נכון את המשפט?</p>
+      <div class="choices">
+        <button class="choice ${a.decision==='correct'?'sel-yes':''}" id="yes"><span class="k">1</span><span>כן, נכון</span></button>
+        <button class="choice ${a.decision==='incorrect'?'sel-no':''}" id="no"><span class="k">2</span><span>לא, שגוי</span></button>
+      </div>
+      <div class="reveal ${a.decision==='incorrect'?'open':''}" id="reveal">
+        <p class="field-label">מהי הקטגוריה המתאימה?</p>
+        <select id="corr"><option value="" ${!a.corrected?'selected':''} disabled>בחרי קטגוריה…</option>${groupsHtml}</select>
+      </div>
+      <p class="note-lbl">הערה (אולי תשמש בהמשך לשיפור המסווג) — לא חובה</p>
+      <textarea id="note" placeholder="משהו שאפשר ללמוד מהדוגמה הזו: על הקטגוריות, על טעויות של המודל, או רעיון לשיפור…">${esc(a.note||'')}</textarea>
+    </div>`;
+
+  document.getElementById('yes').onclick=()=>setDecision('correct');
+  document.getElementById('no').onclick =()=>setDecision('incorrect');
+  document.getElementById('corr').onchange=e=>{ a.corrected=e.target.value; a.ts=now(); persist(); renderSide(); };
+  document.getElementById('note').oninput =e=>{ a.note=e.target.value; a.ts=now(); persist(); };
+
+  document.getElementById('prev').disabled = pos===0;
+  document.getElementById('next').textContent = (pos===view.length-1 && isComplete()) ? 'סיום' : 'הבא';
+}
+function setDecision(d){
+  const a=ansOf(view[pos]);
+  a.decision=d; if(d==='correct') a.corrected=null; a.ts=now();
+  persist(); render();
+  if(d==='incorrect'){ const c=document.getElementById('corr'); if(c) c.focus(); }
+}
+function now(){ return new Date().toISOString(); }
+function esc(s){ return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+// ---- nav ----
+document.getElementById('prev').onclick=()=>{ if(pos>0){pos--; render();} };
+document.getElementById('next').onclick=()=>{
+  if(pos<view.length-1){ pos++; render(); return; }
+  const g=firstUnansweredGlobal();
+  if(g<0){ renderDone(); } else { filterCat=null; buildView(g); render(); }
+};
+document.addEventListener('keydown',e=>{
+  if(['TEXTAREA','INPUT','SELECT'].includes(e.target.tagName)) return;
+  if(e.key==='1') setDecision('correct');
+  else if(e.key==='2') setDecision('incorrect');
+  else if(e.key==='ArrowLeft') document.getElementById('next').click();   // RTL: left = next
+  else if(e.key==='ArrowRight') document.getElementById('prev').click();
+});
+
+// ---- save / load to file ----
+function payload(){
+  return { annotator_id:DATA.annotator_id, annotator_name:state.name||DATA.annotator_name, experiment:DATA.experiment||'',
+    exported_at:now(), total:DATA.items.length, completed:answeredCount(), answers:state.answers };
+}
+function dl(name,text,type){ const b=new Blob([text],{type}); const u=URL.createObjectURL(b);
+  const a=document.createElement('a'); a.href=u; a.download=name; a.click(); URL.revokeObjectURL(u); }
+function resultsName(){ return 'results_'+DATA.annotator_id+(DATA.experiment?('_'+DATA.experiment):'')+'.json'; }
+function downloadJson(){ dl(resultsName(), JSON.stringify(payload(),null,2),'application/json'); }
+
+document.getElementById('saveFile').onclick=downloadJson;
+
+// ---- done ----
+function renderDone(){
+  document.getElementById('navbar').style.display='none';
+  document.getElementById('count').textContent=`הושלמו ${num(answeredCount())} מתוך ${num(DATA.items.length)}`;
+  app.innerHTML=`
+    <div class="done">
+      <h1>סיימת — תודה</h1>
+      <p>תייגת את כל ${num(DATA.items.length)} המשפטים. לחצי על הכפתור כדי להוריד את קובץ התשובות (${esc(resultsName())}), ושלחי אותו לאליה.</p>
+      <div class="actions">
+        <button class="btn primary" id="dlJson">הורדת התשובות</button>
+      </div>
+      <p class="small" style="margin-top:22px">רוצה לבדוק תשובה? <button class="mini" id="back">חזרה לעריכה</button></p>
+    </div>`;
+  document.getElementById('dlJson').onclick=downloadJson;
+  document.getElementById('back').onclick   =()=>{ filterCat=null; buildView(DATA.items.length-1); render(); };
+}
+
+// ---- intro / help modal ----
+const introEl=document.getElementById('intro');
+function showIntro(){ introEl.classList.add('open'); }
+function hideIntro(){ introEl.classList.remove('open'); try{ localStorage.setItem('intro_seen_'+DATA.annotator_id,'1'); }catch(e){} }
+document.getElementById('introClose').onclick=hideIntro;
+document.getElementById('helpBtn').onclick=showIntro;
+introEl.addEventListener('click',e=>{ if(e.target===introEl) hideIntro(); });
+try{ if(!localStorage.getItem('intro_seen_'+DATA.annotator_id)) showIntro(); }catch(e){ showIntro(); }
+
+// ---- start ----
+document.getElementById('shuf').checked=false;
+document.getElementById('onlyTodo').checked=onlyUnanswered;
+buildView(null);
+render();
+</script>
+</body>
+</html>

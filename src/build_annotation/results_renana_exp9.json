@@ -1,0 +1,820 @@
+{
+  "annotator_id": "renana",
+  "annotator_name": "רננה",
+  "experiment": "exp9",
+  "exported_at": "2026-06-16T02:17:42.888Z",
+  "total": 90,
+  "completed": 90,
+  "answers": [
+    {
+      "sentence_id": "285324",
+      "assigned": "קבלת עדות המתלוננת במלואה לאור רושם חיובי, כנות ומהימנות גבוהה",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-15T14:10:10.322Z"
+    },
+    {
+      "sentence_id": "213601",
+      "assigned": "קבלת עדות המתלוננת במלואה לאור רושם חיובי, כנות ומהימנות גבוהה",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-15T14:10:30.238Z"
+    },
+    {
+      "sentence_id": "1754287",
+      "assigned": "קבלת עדות המתלוננת במלואה לאור רושם חיובי, כנות ומהימנות גבוהה",
+      "shared": true,
+      "decision": "incorrect",
+      "corrected": "לא רלוונטי",
+      "note": "זה אכן מרמז שמדובר במהימנות אבל ככלל עדיף להסיר משפטים שמתייחסים לטענות הצדדים\n",
+      "ts": "2026-06-15T14:11:46.863Z"
+    },
+    {
+      "sentence_id": "128175",
+      "assigned": "קבלת עדות המתלוננת במלואה לאור רושם חיובי, כנות ומהימנות גבוהה",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:17:37.022Z"
+    },
+    {
+      "sentence_id": "240529",
+      "assigned": "קבלת עדות המתלוננת במלואה לאור רושם חיובי, כנות ומהימנות גבוהה",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T01:53:50.161Z"
+    },
+    {
+      "sentence_id": "1125559",
+      "assigned": "קבלת עדות המתלוננת במלואה לאור רושם חיובי, כנות ומהימנות גבוהה",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T01:54:03.081Z"
+    },
+    {
+      "sentence_id": "415187",
+      "assigned": "קבלת עדות המתלוננת במלואה לאור רושם חיובי, כנות ומהימנות גבוהה",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T01:54:09.494Z"
+    },
+    {
+      "sentence_id": "289416",
+      "assigned": "קבלת עדות המתלוננת במלואה לאור רושם חיובי, כנות ומהימנות גבוהה",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T01:54:12.478Z"
+    },
+    {
+      "sentence_id": "397515",
+      "assigned": "קבלת עדות המתלוננת במלואה לאור רושם חיובי, כנות ומהימנות גבוהה",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T01:54:46.643Z"
+    },
+    {
+      "sentence_id": "90317",
+      "assigned": "קבלת עדות המתלוננת במלואה לאור רושם חיובי, כנות ומהימנות גבוהה",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "אולי מתאים יותר לקטגוריה ״תיאור מפורט״? בעצם אין לנו קטיגוריה של ״עקביות״",
+      "ts": "2026-06-16T01:55:32.310Z"
+    },
+    {
+      "sentence_id": "1122594",
+      "assigned": "קבלת עדות המתלוננת לאור תיאור מפורט, אותנטי וברור של מסכת האירועים",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T01:55:39.694Z"
+    },
+    {
+      "sentence_id": "9522",
+      "assigned": "קבלת עדות המתלוננת לאור תיאור מפורט, אותנטי וברור של מסכת האירועים",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T01:55:43.111Z"
+    },
+    {
+      "sentence_id": "806819",
+      "assigned": "קבלת עדות המתלוננת לאור תיאור מפורט, אותנטי וברור של מסכת האירועים",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T01:55:46.511Z"
+    },
+    {
+      "sentence_id": "199093",
+      "assigned": "קבלת עדות המתלוננת לאור תיאור מפורט, אותנטי וברור של מסכת האירועים",
+      "shared": true,
+      "decision": "incorrect",
+      "corrected": "לא רלוונטי",
+      "note": "",
+      "ts": "2026-06-16T01:55:56.159Z"
+    },
+    {
+      "sentence_id": "504584",
+      "assigned": "קבלת עדות המתלוננת לאור תיאור מפורט, אותנטי וברור של מסכת האירועים",
+      "shared": false,
+      "decision": "incorrect",
+      "corrected": "לא רלוונטי",
+      "note": "תיאור מפורט לא מעיד על האם התקבלה כמהימנה",
+      "ts": "2026-06-16T01:56:19.525Z"
+    },
+    {
+      "sentence_id": "504432",
+      "assigned": "קבלת עדות המתלוננת לאור תיאור מפורט, אותנטי וברור של מסכת האירועים",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T01:56:31.211Z"
+    },
+    {
+      "sentence_id": "1335669",
+      "assigned": "קבלת עדות המתלוננת לאור תיאור מפורט, אותנטי וברור של מסכת האירועים",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "משפט לא ככ ברור",
+      "ts": "2026-06-16T01:56:50.291Z"
+    },
+    {
+      "sentence_id": "844433",
+      "assigned": "קבלת עדות המתלוננת לאור תיאור מפורט, אותנטי וברור של מסכת האירועים",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T01:56:55.694Z"
+    },
+    {
+      "sentence_id": "864165",
+      "assigned": "קבלת עדות המתלוננת לאור תיאור מפורט, אותנטי וברור של מסכת האירועים",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "קשה להפריד בין שתי הקטיגוריות החיוביות - אולי לא משנה ככ",
+      "ts": "2026-06-16T01:57:27.360Z"
+    },
+    {
+      "sentence_id": "1177301",
+      "assigned": "קבלת עדות המתלוננת לאור תיאור מפורט, אותנטי וברור של מסכת האירועים",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "זה נכון אבל גם ואולי יותר מתאים לקטגורית העדפת עדות המתלוננת על הנאשם בשל חוסר אמינותו",
+      "ts": "2026-06-16T01:58:05.443Z"
+    },
+    {
+      "sentence_id": "337168",
+      "assigned": "קבלת גרסת המתלוננת בהיותה עדות מהימנה הנתמכת בראיות סיוע וחיזוקים",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T01:58:19.028Z"
+    },
+    {
+      "sentence_id": "60190",
+      "assigned": "קבלת גרסת המתלוננת בהיותה עדות מהימנה הנתמכת בראיות סיוע וחיזוקים",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "אבל שוב אולי מתאים גם ואף יותר להעדפת עדותה על פני עדותו...",
+      "ts": "2026-06-16T01:58:46.147Z"
+    },
+    {
+      "sentence_id": "528291",
+      "assigned": "קבלת גרסת המתלוננת בהיותה עדות מהימנה הנתמכת בראיות סיוע וחיזוקים",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "לא שגוי אבל זה לא ברור אם מקבלים את מהימנותה",
+      "ts": "2026-06-16T01:59:18.478Z"
+    },
+    {
+      "sentence_id": "744889",
+      "assigned": "קבלת גרסת המתלוננת בהיותה עדות מהימנה הנתמכת בראיות סיוע וחיזוקים",
+      "shared": true,
+      "decision": "incorrect",
+      "corrected": null,
+      "note": "לא רלוונטי - אין הערכת מהימנות",
+      "ts": "2026-06-16T01:59:54.220Z"
+    },
+    {
+      "sentence_id": "806815",
+      "assigned": "קבלת גרסת המתלוננת בהיותה עדות מהימנה הנתמכת בראיות סיוע וחיזוקים",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:00:17.843Z"
+    },
+    {
+      "sentence_id": "51666",
+      "assigned": "קבלת גרסת המתלוננת בהיותה עדות מהימנה הנתמכת בראיות סיוע וחיזוקים",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:00:29.862Z"
+    },
+    {
+      "sentence_id": "572778",
+      "assigned": "קבלת גרסת המתלוננת בהיותה עדות מהימנה הנתמכת בראיות סיוע וחיזוקים",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "אבל שוב זאת פרשנות של הערכת המהימנות ולא הערכה ישירה",
+      "ts": "2026-06-16T02:00:57.604Z"
+    },
+    {
+      "sentence_id": "218028",
+      "assigned": "קבלת גרסת המתלוננת בהיותה עדות מהימנה הנתמכת בראיות סיוע וחיזוקים",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:01:21.162Z"
+    },
+    {
+      "sentence_id": "826295",
+      "assigned": "קבלת גרסת המתלוננת בהיותה עדות מהימנה הנתמכת בראיות סיוע וחיזוקים",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:02:04.812Z"
+    },
+    {
+      "sentence_id": "569118",
+      "assigned": "קבלת גרסת המתלוננת בהיותה עדות מהימנה הנתמכת בראיות סיוע וחיזוקים",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "למרות שגם נופל לקטגורית העדפת...",
+      "ts": "2026-06-16T02:02:30.854Z"
+    },
+    {
+      "sentence_id": "600021",
+      "assigned": "קבלת עדות הקטינה כעדות אמת מהימנה המגובה בהתרשמות חוקרת הילדים",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:02:36.763Z"
+    },
+    {
+      "sentence_id": "88492",
+      "assigned": "קבלת עדות הקטינה כעדות אמת מהימנה המגובה בהתרשמות חוקרת הילדים",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:02:40.129Z"
+    },
+    {
+      "sentence_id": "352042",
+      "assigned": "קבלת עדות הקטינה כעדות אמת מהימנה המגובה בהתרשמות חוקרת הילדים",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:02:44.997Z"
+    },
+    {
+      "sentence_id": "670494",
+      "assigned": "קבלת עדות הקטינה כעדות אמת מהימנה המגובה בהתרשמות חוקרת הילדים",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:02:47.746Z"
+    },
+    {
+      "sentence_id": "6400",
+      "assigned": "קבלת עדות הקטינה כעדות אמת מהימנה המגובה בהתרשמות חוקרת הילדים",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:02:53.030Z"
+    },
+    {
+      "sentence_id": "1129782",
+      "assigned": "קבלת עדות הקטינה כעדות אמת מהימנה המגובה בהתרשמות חוקרת הילדים",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:02:56.029Z"
+    },
+    {
+      "sentence_id": "1126135",
+      "assigned": "קבלת עדות הקטינה כעדות אמת מהימנה המגובה בהתרשמות חוקרת הילדים",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:02:59.546Z"
+    },
+    {
+      "sentence_id": "376214",
+      "assigned": "קבלת עדות הקטינה כעדות אמת מהימנה המגובה בהתרשמות חוקרת הילדים",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:03:13.695Z"
+    },
+    {
+      "sentence_id": "495097",
+      "assigned": "קבלת עדות הקטינה כעדות אמת מהימנה המגובה בהתרשמות חוקרת הילדים",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:03:16.862Z"
+    },
+    {
+      "sentence_id": "1119800",
+      "assigned": "קבלת עדות הקטינה כעדות אמת מהימנה המגובה בהתרשמות חוקרת הילדים",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:03:22.495Z"
+    },
+    {
+      "sentence_id": "150617",
+      "assigned": "העדפת עדותה המהימנה של המתלוננת ודחיית גרסת הנאשם עקב חוסר אמינותו",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:03:27.878Z"
+    },
+    {
+      "sentence_id": "111190",
+      "assigned": "העדפת עדותה המהימנה של המתלוננת ודחיית גרסת הנאשם עקב חוסר אמינותו",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:03:36.479Z"
+    },
+    {
+      "sentence_id": "63705",
+      "assigned": "העדפת עדותה המהימנה של המתלוננת ודחיית גרסת הנאשם עקב חוסר אמינותו",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:03:38.528Z"
+    },
+    {
+      "sentence_id": "70350",
+      "assigned": "העדפת עדותה המהימנה של המתלוננת ודחיית גרסת הנאשם עקב חוסר אמינותו",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "זה נכון אם כי אין פה אמירה של חוסר אמינות הנאשם. רק שהמתלוננת מהימנה אז יכול לפול גם לקטגוריה רחבה יותר של מהימנות",
+      "ts": "2026-06-16T02:04:27.488Z"
+    },
+    {
+      "sentence_id": "349617",
+      "assigned": "העדפת עדותה המהימנה של המתלוננת ודחיית גרסת הנאשם עקב חוסר אמינותו",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:04:31.613Z"
+    },
+    {
+      "sentence_id": "1327479",
+      "assigned": "העדפת עדותה המהימנה של המתלוננת ודחיית גרסת הנאשם עקב חוסר אמינותו",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:04:41.629Z"
+    },
+    {
+      "sentence_id": "473690",
+      "assigned": "העדפת עדותה המהימנה של המתלוננת ודחיית גרסת הנאשם עקב חוסר אמינותו",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "לא ברור שהנאשם לא מהימן. פרשנות מרחיבה. מצד שני לא מתאים לקבלת העדות כמהימנה... ",
+      "ts": "2026-06-16T02:06:31.579Z"
+    },
+    {
+      "sentence_id": "388825",
+      "assigned": "העדפת עדותה המהימנה של המתלוננת ודחיית גרסת הנאשם עקב חוסר אמינותו",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:06:40.448Z"
+    },
+    {
+      "sentence_id": "527079",
+      "assigned": "העדפת עדותה המהימנה של המתלוננת ודחיית גרסת הנאשם עקב חוסר אמינותו",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:06:48.713Z"
+    },
+    {
+      "sentence_id": "1544989",
+      "assigned": "העדפת עדותה המהימנה של המתלוננת ודחיית גרסת הנאשם עקב חוסר אמינותו",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:06:55.729Z"
+    },
+    {
+      "sentence_id": "133911",
+      "assigned": "קביעת ממצאים עובדתיים מרשיעים על בסיס אימוץ גרסת המתלוננת ודחיית הנאשם",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:07:34.597Z"
+    },
+    {
+      "sentence_id": "848745",
+      "assigned": "קביעת ממצאים עובדתיים מרשיעים על בסיס אימוץ גרסת המתלוננת ודחיית הנאשם",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:07:47.264Z"
+    },
+    {
+      "sentence_id": "692653",
+      "assigned": "קביעת ממצאים עובדתיים מרשיעים על בסיס אימוץ גרסת המתלוננת ודחיית הנאשם",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:08:03.214Z"
+    },
+    {
+      "sentence_id": "19659",
+      "assigned": "קביעת ממצאים עובדתיים מרשיעים על בסיס אימוץ גרסת המתלוננת ודחיית הנאשם",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:08:21.731Z"
+    },
+    {
+      "sentence_id": "1754943",
+      "assigned": "קביעת ממצאים עובדתיים מרשיעים על בסיס אימוץ גרסת המתלוננת ודחיית הנאשם",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:08:30.265Z"
+    },
+    {
+      "sentence_id": "510426",
+      "assigned": "קביעת ממצאים עובדתיים מרשיעים על בסיס אימוץ גרסת המתלוננת ודחיית הנאשם",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:09:21.782Z"
+    },
+    {
+      "sentence_id": "328168",
+      "assigned": "קביעת ממצאים עובדתיים מרשיעים על בסיס אימוץ גרסת המתלוננת ודחיית הנאשם",
+      "shared": false,
+      "decision": "incorrect",
+      "corrected": "לא רלוונטי",
+      "note": "",
+      "ts": "2026-06-16T02:09:49.125Z"
+    },
+    {
+      "sentence_id": "269435",
+      "assigned": "קביעת ממצאים עובדתיים מרשיעים על בסיס אימוץ גרסת המתלוננת ודחיית הנאשם",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:10:05.350Z"
+    },
+    {
+      "sentence_id": "63997",
+      "assigned": "קביעת ממצאים עובדתיים מרשיעים על בסיס אימוץ גרסת המתלוננת ודחיית הנאשם",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:10:12.216Z"
+    },
+    {
+      "sentence_id": "4629",
+      "assigned": "קביעת ממצאים עובדתיים מרשיעים על בסיס אימוץ גרסת המתלוננת ודחיית הנאשם",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:10:18.686Z"
+    },
+    {
+      "sentence_id": "383712",
+      "assigned": "דחיית עדות המתלוננת עקב חוסר עקביות וסתירות מהותיות בגרסתה",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:10:33.567Z"
+    },
+    {
+      "sentence_id": "363745",
+      "assigned": "דחיית עדות המתלוננת עקב חוסר עקביות וסתירות מהותיות בגרסתה",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:10:44.417Z"
+    },
+    {
+      "sentence_id": "151456",
+      "assigned": "דחיית עדות המתלוננת עקב חוסר עקביות וסתירות מהותיות בגרסתה",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "זה לא ברור שהם דוחים. הם מצביעים על סתירה. זה בעייתי לפרש שהם בהכרח ידחו. שוה לבדוק את הקונטקסט הרחב יותר",
+      "ts": "2026-06-16T02:11:18.532Z"
+    },
+    {
+      "sentence_id": "143232",
+      "assigned": "דחיית עדות המתלוננת עקב חוסר עקביות וסתירות מהותיות בגרסתה",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "כנ״ל",
+      "ts": "2026-06-16T02:11:32.726Z"
+    },
+    {
+      "sentence_id": "687212",
+      "assigned": "דחיית עדות המתלוננת עקב חוסר עקביות וסתירות מהותיות בגרסתה",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:11:42.434Z"
+    },
+    {
+      "sentence_id": "138912",
+      "assigned": "דחיית עדות המתלוננת עקב חוסר עקביות וסתירות מהותיות בגרסתה",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:11:45.419Z"
+    },
+    {
+      "sentence_id": "594144",
+      "assigned": "דחיית עדות המתלוננת עקב חוסר עקביות וסתירות מהותיות בגרסתה",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:11:49.985Z"
+    },
+    {
+      "sentence_id": "133862",
+      "assigned": "דחיית עדות המתלוננת עקב חוסר עקביות וסתירות מהותיות בגרסתה",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:11:59.752Z"
+    },
+    {
+      "sentence_id": "911787",
+      "assigned": "דחיית עדות המתלוננת עקב חוסר עקביות וסתירות מהותיות בגרסתה",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:12:03.903Z"
+    },
+    {
+      "sentence_id": "945217",
+      "assigned": "דחיית עדות המתלוננת עקב חוסר עקביות וסתירות מהותיות בגרסתה",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:12:09.669Z"
+    },
+    {
+      "sentence_id": "911779",
+      "assigned": "דחיית הרשעה על בסיס עדות יחידה של המתלוננת בהעדר ראיות סיוע",
+      "shared": true,
+      "decision": "incorrect",
+      "corrected": "לא רלוונטי",
+      "note": "",
+      "ts": "2026-06-16T02:12:28.799Z"
+    },
+    {
+      "sentence_id": "188984",
+      "assigned": "דחיית הרשעה על בסיס עדות יחידה של המתלוננת בהעדר ראיות סיוע",
+      "shared": true,
+      "decision": "incorrect",
+      "corrected": "דחיית עדות המתלוננת עקב חוסר עקביות וסתירות מהותיות בגרסתה",
+      "note": "",
+      "ts": "2026-06-16T02:12:44.983Z"
+    },
+    {
+      "sentence_id": "1342289",
+      "assigned": "דחיית הרשעה על בסיס עדות יחידה של המתלוננת בהעדר ראיות סיוע",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:12:56.634Z"
+    },
+    {
+      "sentence_id": "191043",
+      "assigned": "דחיית הרשעה על בסיס עדות יחידה של המתלוננת בהעדר ראיות סיוע",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:13:03.454Z"
+    },
+    {
+      "sentence_id": "84333",
+      "assigned": "דחיית הרשעה על בסיס עדות יחידה של המתלוננת בהעדר ראיות סיוע",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:13:12.553Z"
+    },
+    {
+      "sentence_id": "72189",
+      "assigned": "דחיית הרשעה על בסיס עדות יחידה של המתלוננת בהעדר ראיות סיוע",
+      "shared": false,
+      "decision": "incorrect",
+      "corrected": "לא רלוונטי",
+      "note": "",
+      "ts": "2026-06-16T02:13:53.088Z"
+    },
+    {
+      "sentence_id": "38303",
+      "assigned": "דחיית הרשעה על בסיס עדות יחידה של המתלוננת בהעדר ראיות סיוע",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:14:04.336Z"
+    },
+    {
+      "sentence_id": "150562",
+      "assigned": "דחיית הרשעה על בסיס עדות יחידה של המתלוננת בהעדר ראיות סיוע",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:14:15.586Z"
+    },
+    {
+      "sentence_id": "604382",
+      "assigned": "דחיית הרשעה על בסיס עדות יחידה של המתלוננת בהעדר ראיות סיוע",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:14:22.885Z"
+    },
+    {
+      "sentence_id": "1215664",
+      "assigned": "דחיית הרשעה על בסיס עדות יחידה של המתלוננת בהעדר ראיות סיוע",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:14:37.186Z"
+    },
+    {
+      "sentence_id": "649840",
+      "assigned": "לא רלוונטי",
+      "shared": true,
+      "decision": "incorrect",
+      "corrected": "לא רלוונטי",
+      "note": "",
+      "ts": "2026-06-16T02:14:46.433Z"
+    },
+    {
+      "sentence_id": "450984",
+      "assigned": "לא רלוונטי",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:14:55.803Z"
+    },
+    {
+      "sentence_id": "798646",
+      "assigned": "לא רלוונטי",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:15:00.721Z"
+    },
+    {
+      "sentence_id": "1569893",
+      "assigned": "לא רלוונטי",
+      "shared": true,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:15:04.037Z"
+    },
+    {
+      "sentence_id": "25511",
+      "assigned": "לא רלוונטי",
+      "shared": false,
+      "decision": "incorrect",
+      "corrected": "קבלת גרסת המתלוננת בהיותה עדות מהימנה הנתמכת בראיות סיוע וחיזוקים",
+      "note": "אם קיבלנו משפטים אחרים שהיתה בהם פרשנות של קבלה מובלעת של המהימנות נראה לי שצריך גם פה. ",
+      "ts": "2026-06-16T02:16:15.901Z"
+    },
+    {
+      "sentence_id": "751318",
+      "assigned": "לא רלוונטי",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:16:27.136Z"
+    },
+    {
+      "sentence_id": "48335",
+      "assigned": "לא רלוונטי",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:16:32.069Z"
+    },
+    {
+      "sentence_id": "90735",
+      "assigned": "לא רלוונטי",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:16:46.704Z"
+    },
+    {
+      "sentence_id": "573869",
+      "assigned": "לא רלוונטי",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:16:51.187Z"
+    },
+    {
+      "sentence_id": "548860",
+      "assigned": "לא רלוונטי",
+      "shared": false,
+      "decision": "correct",
+      "corrected": null,
+      "note": "",
+      "ts": "2026-06-16T02:17:14.721Z"
+    }
+  ]
+}

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>השוואת תיוגים</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F7F5F0; --ink:#1F1D1A; --muted:#6B6660; --line:#E4DFD5;
+    --accent:#6E2B2B; --accent-soft:#f0e6e3; --yes:#2E6B4F; --yes-soft:#e6efe9;
+    --no:#A14233; --no-soft:#f3e4df; --card:#FFFFFF;
+    --rA:#3E6B89; --rB:#B07A2C;
+    --serif:'Frank Ruhl Libre',Georgia,serif; --sans:'Heebo',system-ui,Arial,sans-serif;
+  }
+  *{box-sizing:border-box} html,body{margin:0;padding:0}
+  body{background:var(--paper); color:var(--ink); font-family:var(--sans); line-height:1.6; -webkit-font-smoothing:antialiased}
+  .bar{position:sticky; top:0; z-index:20; background:rgba(247,245,240,.92); backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line); display:flex; align-items:center; gap:14px; padding:12px 18px; flex-wrap:wrap}
+  .bar .title{font-weight:500; font-size:16px}
+  .bar .exp{font-size:15px; color:var(--muted)} .bar .exp b{color:var(--ink)}
+  .bar .spacer{flex:1}
+  .switch{display:flex; align-items:center; gap:8px; font-size:14px; cursor:pointer}
+  .switch input{accent-color:var(--accent); width:16px; height:16px}
+  .count{font-size:14px; color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap}
+  .track{height:3px; background:var(--line); display:flex}
+  .track .fill{height:100%; background:var(--accent); width:0; transition:width .3s ease}
+
+  .wrap{max-width:880px; margin:0 auto; padding:38px 22px 120px}
+  .eyebrow{font-size:12px; letter-spacing:.06em; color:var(--muted); margin-bottom:8px}
+  .tag{display:inline-block; background:var(--accent-soft); color:var(--accent); border:1px solid #e3cfc9;
+    border-radius:6px; padding:8px 14px; font-weight:500; font-size:15px; margin-bottom:20px}
+  .excerpt{font-family:var(--serif); font-size:24px; line-height:1.75; border-right:3px solid var(--accent);
+    padding:4px 20px 4px 0; margin:0 0 20px; color:#161412}
+  .peeks{display:flex; flex-wrap:wrap; gap:10px; margin:0 0 26px}
+  .peek{border:1px solid var(--line); border-radius:8px; background:var(--card); max-width:100%}
+  .peek summary{cursor:pointer; list-style:none; padding:8px 13px; font-size:13px; color:var(--muted)}
+  .peek summary::-webkit-details-marker{display:none}
+  .peek summary::before{content:"▸ "; color:var(--accent)}
+  .peek[open] summary::before{content:"▾ "}
+  .peek-body{padding:12px 14px; font-size:14px; line-height:1.6; color:#2b2825; max-width:680px; border-top:1px solid var(--line)}
+
+  .cmp{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+  .col{border:1px solid var(--line); border-radius:12px; background:var(--card); padding:16px 18px}
+  .col .who{font-weight:600; font-size:15px; margin-bottom:12px}
+  .col.rA .who{color:var(--rA)} .col.rB .who{color:var(--rB)}
+  .dec{display:inline-block; font-size:14px; font-weight:500; padding:5px 12px; border-radius:7px; margin-bottom:12px}
+  .dec.yes{background:var(--yes-soft); color:var(--yes)} .dec.no{background:var(--no-soft); color:var(--no)}
+  .flabel{font-size:12px; color:var(--muted); margin-bottom:3px}
+  .fcat{font-size:15px; line-height:1.5; padding:8px 10px; border-radius:7px; background:var(--paper)}
+  .fcat.diff{background:#fbeede; border:1px solid #e7c98f}
+  .note{margin-top:12px; font-size:14px; color:#2b2825}
+  .note .lbl{font-size:12px; color:var(--muted); margin-bottom:3px}
+  .note .empty{color:var(--muted)}
+  .diffflag{display:inline-block; font-size:12px; color:var(--accent); background:var(--accent-soft);
+    border:1px solid #e3cfc9; border-radius:6px; padding:3px 10px; margin-bottom:16px}
+
+  .nav{position:fixed; bottom:0; right:0; left:0; background:rgba(247,245,240,.94); backdrop-filter:blur(6px);
+    border-top:1px solid var(--line); display:flex; justify-content:center; padding:14px 20px; z-index:15}
+  .nav .inner{display:flex; gap:12px; width:100%; max-width:880px}
+  .btn{font:inherit; font-size:15px; font-weight:500; padding:12px 22px; border-radius:9px; border:1.5px solid var(--line);
+    background:var(--card); color:var(--ink); cursor:pointer}
+  .btn:hover:not(:disabled){border-color:#cfc8bb} .btn:disabled{opacity:.4; cursor:default}
+  .btn.primary{background:var(--accent); border-color:var(--accent); color:#fff; flex:1}
+  .empty-state{text-align:center; padding:60px 20px} .empty-state h1{font-family:var(--serif); font-weight:500}
+  @media (max-width:640px){ .cmp{grid-template-columns:1fr} .excerpt{font-size:21px} }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="bar">
+  <div class="title" id="title"></div>
+  <div class="exp" id="expWrap">ניסוי: <b id="expName"></b></div>
+  <div class="spacer"></div>
+  <label class="switch"><input type="checkbox" id="onlyDiff"> הצג רק מקומות שבהם הן נבדלו</label>
+  <div class="count" id="count"></div>
+</div>
+<div class="track"><div class="fill" id="fill"></div></div>
+
+<div id="app"></div>
+
+<div class="nav" id="navbar"><div class="inner">
+  <button class="btn" id="prev">הקודם</button>
+  <button class="btn primary" id="next">הבא</button>
+</div></div>
+
+<script>
+const DATA = /*__PAYLOAD__*/;
+const A=DATA.annotators[0], B=DATA.annotators[1];   // {id,name}
+let onlyDiff = true;
+let view=[], pos=0;
+
+document.getElementById('title').textContent = `השוואת תיוגים — ${A.name} מול ${B.name}`;
+if(DATA.experiment){ document.getElementById('expName').textContent=DATA.experiment; }
+else { document.getElementById('expWrap').style.display='none'; }
+
+function build(keepId){
+  const cur = keepId!=null ? keepId : (view[pos]!=null?DATA.items[view[pos]].id:null);
+  view = DATA.items.map((_,i)=>i).filter(i=> onlyDiff ? DATA.items[i].differ : true);
+  const p = cur!=null ? view.findIndex(i=>DATA.items[i].id===cur) : -1;
+  pos = p>=0 ? p : 0;
+}
+function esc(s){ return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+const app=document.getElementById('app');
+function render(){
+  document.getElementById('fill').style.width = (view.length? (pos+1)/view.length*100:0)+'%';
+  if(!view.length){
+    document.getElementById('navbar').style.display='none';
+    document.getElementById('count').textContent='';
+    app.innerHTML=`<div class="empty-state"><h1>אין הבדלים להצגה</h1><p>במשפטים המשותפים אין מקומות שבהם סימנתן שונה.</p></div>`;
+    return;
+  }
+  document.getElementById('navbar').style.display='flex';
+  const it=DATA.items[view[pos]];
+  document.getElementById('count').textContent = `פריט \u2068${pos+1}\u2069 מתוך \u2068${view.length}\u2069`;
+
+  const peek = (label,val)=> val ? `<details class="peek"><summary>${label}</summary><div class="peek-body">${esc(val)}</div></details>` : '';
+  const diffCat = it.r.final!==it.c.final;
+  const col=(cls,who,d)=>{
+    const yes=d.decision==='correct';
+    const dec=`<span class="dec ${yes?'yes':'no'}">${yes?'כן, נכון':'לא, שגוי'}</span>`;
+    const note = d.note&&d.note.trim()
+      ? `<div class="note"><div class="lbl">הערה</div>${esc(d.note)}</div>`
+      : `<div class="note"><div class="lbl">הערה</div><span class="empty">—</span></div>`;
+    return `<div class="col ${cls}">
+        <div class="who">${esc(who)}</div>${dec}
+        <div class="flabel">קטגוריה סופית</div>
+        <div class="fcat ${diffCat?'diff':''}">${esc(d.final)}</div>
+        ${note}</div>`;
+  };
+  app.innerHTML=`<div class="wrap">
+    ${it.differ?'<div class="diffflag">סימנתן כאן שונה</div><br>':''}
+    <div class="eyebrow">התיוג שניתן על-ידי המודל</div>
+    <div class="tag">${esc(it.assigned)}</div>
+    <blockquote class="excerpt">${esc(it.sentence)}</blockquote>
+    <div class="peeks">${peek('הקטגוריה הישנה (מהמאמר המקורי)',it.old_category)}${peek('הנימוק של המודל לבחירת הקטגוריה הנוכחית',it.reasoning)}</div>
+    <div class="cmp">${col('rA',A.name,it.r)}${col('rB',B.name,it.c)}</div>
+  </div>`;
+  document.getElementById('prev').disabled = pos===0;
+  document.getElementById('next').disabled = pos===view.length-1;
+}
+document.getElementById('prev').onclick=()=>{ if(pos>0){pos--;render();} };
+document.getElementById('next').onclick=()=>{ if(pos<view.length-1){pos++;render();} };
+document.addEventListener('keydown',e=>{
+  if(['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
+  if(e.key==='ArrowLeft') document.getElementById('next').click();
+  else if(e.key==='ArrowRight') document.getElementById('prev').click();
+});
+const od=document.getElementById('onlyDiff'); od.checked=onlyDiff;
+od.onchange=e=>{ onlyDiff=e.target.checked; build(null); render(); };
+
+build(null); render();
+</script>
+</body>
+</html>
