@@ -13,9 +13,10 @@ class BatchProcessor:
                  api_key: str,
                  model: str,
                  max_tokens: int,
-                 temperature: float):
+                 temperature: float,
+                 batch_dir_name: str = "batches"):
         self.client = OpenAI(api_key=api_key)
-        self.batch_dir = DATA_DIR / "batches"
+        self.batch_dir = DATA_DIR / batch_dir_name
         self.batch_dir.mkdir(exist_ok=True)
         self.model = model
         self.max_tokens = max_tokens
@@ -31,8 +32,8 @@ class BatchProcessor:
                                  categories_text: str,
                                  examples_df: Optional[pd.DataFrame] = None) -> str:
         """Get existing batch file or prepare a new one"""
-        start_idx = sentences[0].get('index', 0)
-        end_idx = sentences[-1].get('index', len(sentences)-1)
+        start_idx = sentences[0].get('sentence_id', 0)
+        end_idx = sentences[-1].get('sentence_id', len(sentences)-1)
         
         # Check if batch file already exists
         existing_file = self.get_existing_batch_file(start_idx, end_idx)
@@ -52,7 +53,7 @@ class BatchProcessor:
                 )
                 
                 request = {
-                    "custom_id": f"request-{sentence_data.get('index', i)}",
+                    "custom_id": f"request-{sentence_data.get('sentence_id', i)}",
                     "method": "POST",
                     "url": "/v1/chat/completions",
                     "body": {

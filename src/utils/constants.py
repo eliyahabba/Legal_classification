@@ -17,10 +17,12 @@ RESULTS_FILE = DATA_DIR / "classification_results.csv"
 # LLM Types
 class LLMTypes:
     OPENAI = "openai"
+    GEMINI = "gemini"
 
 # LLM Models
 class LLMModels:
     OPENAI = "gpt-4o"
+    GEMINI = "gemini-3.5-flash"
 
 # Processing parameters
 TEMPERATURE = 0.2

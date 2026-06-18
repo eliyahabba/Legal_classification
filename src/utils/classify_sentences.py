@@ -129,7 +129,7 @@ def main():
     sentences_list = []
     for idx, row in unclassified_df.iterrows():
         data = row.to_dict()
-        data['index'] = idx
+        data['sentence_id'] = idx
         sentences_list.append(data)
 
     # Initialize batch processor
@@ -192,7 +192,7 @@ def main():
         for result in completed_results:
             idx_str = result['custom_id'].split('-')[1]
             original_idx = int(idx_str)
-            if original_idx in unclassified_df.index:
+            if original_idx in unclassified_df.sentence_id:
                 sentence_data = unclassified_df.loc[original_idx].to_dict()
                 sentence_data['category'] = clean_category(result['category'])
                 if sentence_data['category'] not in categories:
@@ -228,7 +228,7 @@ def main():
     big_sentences_list = []
     for idx, row in unclassified_df.iterrows():
         d = row.to_dict()
-        d['index'] = row['sentence_id']
+        d['sentence_id'] = row['sentence_id']
         big_sentences_list.append(d)
 
     chunks = chunkify(big_sentences_list, args.batch_size)
@@ -243,8 +243,8 @@ def main():
 
     # Create batches for each chunk
     for chunk_data in chunks:
-        start_idx = chunk_data[0]['index']
-        end_idx = chunk_data[-1]['index']
+        start_idx = chunk_data[0]['sentence_id']
+        end_idx = chunk_data[-1]['sentence_id']
         chunk_range = f"{start_idx}-{end_idx}"
 
         for b_id, info in all_batches.items():

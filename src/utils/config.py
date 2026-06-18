@@ -12,9 +12,13 @@ def load_config(model_type: LLMTypes):
     load_dotenv()
 
     if model_type == LLMTypes.OPENAI:
-        if not os.getenv('OPENAI_KEY'):
-            raise ValueError("OPENAI_KEY must be set in .env file")
-        api_key = os.getenv('OPENAI_KEY')
+        api_key = os.getenv('OPENAI_KEY') or os.getenv('OPENAI_API_KEY')
+        if not api_key:
+            raise ValueError("OPENAI_KEY or OPENAI_API_KEY must be set in .env file")
+    elif model_type == LLMTypes.GEMINI:
+        api_key = os.getenv('GEMINI_API_KEY')
+        if not api_key:
+            raise ValueError("GEMINI_API_KEY must be set in .env file")
     else:  # claude
         if not os.getenv('ANTHROPIC_API_KEY'):
             raise ValueError("ANTHROPIC_API_KEY must be set in .env file")
